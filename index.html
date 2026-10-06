@@ -1,0 +1,3449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MailFlow X — Network Protocol Laboratory</title>
+    <style>
+        /* ============================================================
+           MAILFLOW X — PROFESSIONAL NETWORK LAB STYLESHEET
+           ============================================================ */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        :root {
+            --bg-deep: #080B12;
+            --bg-panel: #0D1117;
+            --bg-card: #111827;
+            --bg-elevated: #161F2E;
+            --border-subtle: #1E293B;
+            --border-active: #2D4A6B;
+            --text-primary: #E6EDF7;
+            --text-secondary: #94A3B8;
+            --text-muted: #64748B;
+            --accent-cyan: #22D3EE;
+            --accent-blue: #3B82F6;
+            --accent-electric: #38BDF8;
+            --success: #10B981;
+            --success-glow: rgba(16, 185, 129, 0.35);
+            --warning: #F59E0B;
+            --warning-glow: rgba(245, 158, 11, 0.35);
+            --failure: #EF4444;
+            --failure-glow: rgba(239, 68, 68, 0.35);
+            --info-glow: rgba(34, 211, 238, 0.25);
+            --node-idle: #1E293B;
+            --node-processing: #1E3A5F;
+            --node-success: #064E3B;
+            --node-failed: #4C1D1D;
+            --node-warning: #4C3D1D;
+            --font-ui: 'Inter', system-ui, -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            background: var(--bg-deep);
+            color: var(--text-primary);
+            font-family: var(--font-ui);
+            font-size: 14px;
+            line-height: 1.5;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: var(--bg-deep); }
+        ::-webkit-scrollbar-thumb { background: #2D3E56; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #3D5470; }
+
+        /* ============================================================
+           HEADER
+           ============================================================ */
+        .app-header {
+            background: linear-gradient(180deg, #0A0F1A 0%, #0D1117 100%);
+            border-bottom: 1px solid var(--border-subtle);
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.85rem;
+        }
+
+        .brand-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #0EA5E9, #3B82F6);
+            display: grid;
+            place-items: center;
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: white;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.4);
+            letter-spacing: -0.5px;
+        }
+
+        .brand-text h1 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+        }
+
+        .brand-text .tagline {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            letter-spacing: 0.2px;
+        }
+
+        .header-metrics {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .metric-pill {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            padding: 0.4rem 0.85rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+        }
+
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--success);
+            box-shadow: 0 0 8px var(--success-glow);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .pulse-dot.processing { background: var(--accent-cyan); box-shadow: 0 0 8px var(--info-glow); }
+        .pulse-dot.failed { background: var(--failure); box-shadow: 0 0 8px var(--failure-glow); }
+
+        /* ============================================================
+           NAVIGATION
+           ============================================================ */
+        .main-nav {
+            display: flex;
+            gap: 0.15rem;
+            background: var(--bg-panel);
+            padding: 0.4rem 1.5rem;
+            border-bottom: 1px solid var(--border-subtle);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .main-nav::-webkit-scrollbar { display: none; }
+
+        .nav-link {
+            padding: 0.55rem 1rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            border-radius: 7px;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            font-family: var(--font-ui);
+        }
+
+        .nav-link:hover {
+            color: var(--text-primary);
+            background: var(--bg-card);
+        }
+
+        .nav-link.active {
+            color: var(--accent-electric);
+            background: rgba(56, 189, 248, 0.08);
+            border-color: rgba(56, 189, 248, 0.25);
+        }
+
+        /* ============================================================
+           LAYOUT
+           ============================================================ */
+        .page-container {
+            flex: 1;
+            padding: 1.25rem 1.5rem;
+            max-width: 1700px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .page { display: none; }
+        .page.active-page { display: block; animation: fadeIn 0.25s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.1rem; }
+        .grid-main { display: grid; grid-template-columns: 1.55fr 1fr; gap: 1.1rem; }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 12px;
+            padding: 1.1rem 1.25rem;
+            box-shadow: 0 4px 20px -6px rgba(0, 0, 0, 0.5);
+            transition: border-color 0.15s;
+        }
+
+        .card:hover { border-color: #243147; }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.9rem;
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: var(--text-secondary);
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        .card-header .header-actions {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+        }
+
+        /* ============================================================
+           TOPOLOGY
+           ============================================================ */
+        .topology-wrap {
+            position: relative;
+            padding: 1rem 0.5rem;
+            overflow-x: auto;
+        }
+
+        .topology-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+            min-width: 100%;
+        }
+
+        .topo-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            position: relative;
+        }
+
+        .topo-node {
+            position: relative;
+            background: var(--node-idle);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.6rem 1.1rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-align: center;
+            color: var(--text-secondary);
+            min-width: 110px;
+            letter-spacing: 0.4px;
+            transition: all 0.25s ease;
+            cursor: pointer;
+            user-select: none;
+            z-index: 2;
+        }
+
+        .topo-node:hover {
+            border-color: var(--border-active);
+            color: var(--text-primary);
+        }
+
+        .topo-node .node-label {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .topo-node .node-status {
+            display: block;
+            font-size: 0.6rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .topo-node.state-processing {
+            background: var(--node-processing);
+            border-color: var(--accent-cyan);
+            color: #BAE6FD;
+            box-shadow: 0 0 18px var(--info-glow), inset 0 0 12px rgba(34, 211, 238, 0.08);
+        }
+        .topo-node.state-processing .node-status { color: var(--accent-cyan); }
+
+        .topo-node.state-success {
+            background: var(--node-success);
+            border-color: var(--success);
+            color: #A7F3D0;
+            box-shadow: 0 0 18px var(--success-glow);
+        }
+        .topo-node.state-success .node-status { color: #6EE7B7; }
+
+        .topo-node.state-failed {
+            background: var(--node-failed);
+            border-color: var(--failure);
+            color: #FECACA;
+            box-shadow: 0 0 18px var(--failure-glow);
+        }
+        .topo-node.state-failed .node-status { color: #FCA5A5; }
+
+        .topo-node.state-warning {
+            background: var(--node-warning);
+            border-color: var(--warning);
+            color: #FDE68A;
+            box-shadow: 0 0 18px var(--warning-glow);
+        }
+        .topo-node.state-warning .node-status { color: #FCD34D; }
+
+        .topo-connector {
+            width: 2px;
+            height: 22px;
+            background: linear-gradient(180deg, #1E293B, #2D4A6B);
+            position: relative;
+            display: flex;
+            justify-content: center;
+        }
+
+        .topo-connector.active {
+            background: linear-gradient(180deg, var(--accent-cyan), var(--accent-blue));
+            box-shadow: 0 0 8px var(--info-glow);
+        }
+
+        .packet-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--accent-cyan);
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: packetTravel 1.1s ease-in-out infinite;
+        }
+
+        @keyframes packetTravel {
+            0% { top: -3px; opacity: 0; }
+            15% { opacity: 1; }
+            85% { opacity: 1; }
+            100% { top: 22px; opacity: 0; }
+        }
+
+        .topo-split {
+            display: flex;
+            justify-content: center;
+            gap: 3.5rem;
+            margin-top: 0.3rem;
+            flex-wrap: wrap;
+        }
+
+        .topo-branch {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        /* Node detail popover */
+        .node-popover {
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-active);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            color: var(--text-secondary);
+            white-space: nowrap;
+            z-index: 20;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.6);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .topo-node:hover .node-popover { opacity: 1; }
+
+        .node-popover strong { color: var(--accent-electric); display: block; margin-bottom: 3px; }
+
+        /* ============================================================
+           PROTOCOL STREAM
+           ============================================================ */
+        .protocol-stream {
+            background: #060A10;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            font-family: var(--font-mono);
+            font-size: 0.74rem;
+            padding: 0.85rem 1rem;
+            height: 300px;
+            overflow-y: auto;
+            line-height: 1.75;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .stream-line {
+            display: flex;
+            gap: 0.65rem;
+            padding: 1px 0;
+            animation: streamIn 0.2s ease;
+        }
+
+        @keyframes streamIn {
+            from { opacity: 0; transform: translateX(-4px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .stream-time {
+            color: #475569;
+            flex-shrink: 0;
+            min-width: 62px;
+            font-size: 0.68rem;
+        }
+
+        .stream-proto {
+            flex-shrink: 0;
+            min-width: 42px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            padding: 1px 5px;
+            border-radius: 3px;
+            text-align: center;
+            align-self: flex-start;
+            margin-top: 3px;
+        }
+
+        .proto-smtp { background: rgba(59, 130, 246, 0.15); color: #60A5FA; }
+        .proto-pop3 { background: rgba(168, 85, 247, 0.15); color: #C084FC; }
+        .proto-imap { background: rgba(245, 158, 11, 0.15); color: #FBBF24; }
+        .proto-dns  { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+        .proto-tcp  { background: rgba(100, 116, 139, 0.2); color: #94A3B8; }
+        .proto-err  { background: rgba(239, 68, 68, 0.15); color: #F87171; }
+
+        .stream-content {
+            flex: 1;
+            color: #CBD5E1;
+            word-break: break-word;
+        }
+
+        .stream-line.client .stream-content { color: #93C5FD; }
+        .stream-line.server .stream-content { color: #A7F3D0; }
+        .stream-line.error .stream-content { color: #FCA5A5; }
+        .stream-line.system .stream-content { color: #94A3B8; font-style: italic; }
+        .stream-line.highlight .stream-content { color: #22D3EE; font-weight: 500; }
+
+        .stream-arrow { color: #475569; margin: 0 3px; }
+
+        /* Filter chips */
+        .filter-chips {
+            display: flex;
+            gap: 0.35rem;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            font-size: 0.66rem;
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.12s;
+            font-family: var(--font-mono);
+            user-select: none;
+        }
+
+        .chip:hover { border-color: var(--border-active); color: var(--text-secondary); }
+        .chip.active {
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: var(--accent-electric);
+        }
+
+        /* ============================================================
+           PROTOCOL X-RAY
+           ============================================================ */
+        .xray-panel {
+            background: #0A0F18;
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1rem;
+            font-size: 0.78rem;
+        }
+
+        .xray-header {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .xray-badge {
+            font-family: var(--font-mono);
+            font-size: 0.68rem;
+            font-weight: 600;
+            padding: 0.22rem 0.6rem;
+            border-radius: 5px;
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-electric);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .xray-command {
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .xray-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.65rem 1.2rem;
+        }
+
+        .xray-item { display: flex; flex-direction: column; gap: 2px; }
+        .xray-item.full { grid-column: 1 / -1; }
+
+        .xray-label {
+            font-size: 0.62rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .xray-value {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            word-break: break-word;
+        }
+
+        .xray-value.success { color: #34D399; }
+        .xray-value.failed { color: #F87171; }
+        .xray-value.warning { color: #FBBF24; }
+
+        .xray-meaning {
+            grid-column: 1 / -1;
+            background: rgba(59, 130, 246, 0.06);
+            border-left: 2px solid var(--accent-blue);
+            padding: 0.55rem 0.75rem;
+            border-radius: 0 6px 6px 0;
+            font-size: 0.73rem;
+            color: #CBD5E1;
+            line-height: 1.5;
+        }
+
+        .xray-empty {
+            text-align: center;
+            padding: 2rem 1rem;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        /* ============================================================
+           TIMELINE / REPLAY
+           ============================================================ */
+        .timeline-track {
+            display: flex;
+            align-items: center;
+            gap: 0;
+            padding: 0.9rem 0.5rem 0.6rem;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+
+        .tl-step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            flex-shrink: 0;
+            cursor: pointer;
+            padding: 0 0.15rem;
+        }
+
+        .tl-node {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            background: var(--bg-elevated);
+            border: 2px solid var(--border-subtle);
+            display: grid;
+            place-items: center;
+            font-size: 0.6rem;
+            font-family: var(--font-mono);
+            color: var(--text-muted);
+            transition: all 0.2s;
+            z-index: 2;
+        }
+
+        .tl-step:hover .tl-node { border-color: var(--border-active); }
+
+        .tl-step.done .tl-node {
+            background: var(--node-success);
+            border-color: var(--success);
+            color: #A7F3D0;
+        }
+
+        .tl-step.failed .tl-node {
+            background: var(--node-failed);
+            border-color: var(--failure);
+            color: #FECACA;
+        }
+
+        .tl-step.current .tl-node {
+            background: var(--node-processing);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--info-glow);
+            color: var(--accent-cyan);
+            transform: scale(1.15);
+        }
+
+        .tl-label {
+            font-size: 0.58rem;
+            color: var(--text-muted);
+            margin-top: 5px;
+            max-width: 62px;
+            text-align: center;
+            line-height: 1.2;
+            font-family: var(--font-mono);
+            letter-spacing: 0.2px;
+        }
+
+        .tl-step.current .tl-label { color: var(--accent-cyan); font-weight: 600; }
+        .tl-step.failed .tl-label { color: #F87171; }
+
+        .tl-connector {
+            width: 24px;
+            height: 2px;
+            background: var(--border-subtle);
+            flex-shrink: 0;
+            margin-top: -16px;
+        }
+
+        .tl-connector.done { background: var(--success); }
+        .tl-connector.failed { background: var(--failure); }
+
+        .replay-controls {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.55rem;
+            padding-top: 0.6rem;
+            border-top: 1px solid var(--border-subtle);
+            margin-top: 0.5rem;
+        }
+
+        /* ============================================================
+           BUTTONS & CONTROLS
+           ============================================================ */
+        .btn {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            color: var(--text-primary);
+            padding: 0.5rem 1rem;
+            border-radius: 7px;
+            font-size: 0.76rem;
+            font-weight: 500;
+            font-family: var(--font-ui);
+            cursor: pointer;
+            transition: all 0.12s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.35rem;
+            white-space: nowrap;
+        }
+
+        .btn:hover:not(:disabled) {
+            background: #1E293B;
+            border-color: var(--border-active);
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #2563EB, #1D4ED8);
+            border-color: #3B82F6;
+            color: white;
+            box-shadow: 0 2px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: linear-gradient(135deg, #3B82F6, #2563EB);
+            box-shadow: 0 4px 18px rgba(59, 130, 246, 0.45);
+        }
+
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.12);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #FCA5A5;
+        }
+
+        .btn-danger:hover:not(:disabled) {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: var(--failure);
+        }
+
+        .btn-ghost {
+            background: transparent;
+            border-color: transparent;
+            color: var(--text-secondary);
+        }
+
+        .btn-ghost:hover { background: var(--bg-elevated); }
+
+        .btn-icon {
+            padding: 0.45rem;
+            min-width: 34px;
+        }
+
+        .btn-sm { padding: 0.35rem 0.7rem; font-size: 0.7rem; }
+
+        /* ============================================================
+           FORMS
+           ============================================================ */
+        .form-group { margin-bottom: 0.75rem; }
+
+        label {
+            display: block;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+            letter-spacing: 0.4px;
+            text-transform: uppercase;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            background: #0A0F18;
+            border: 1px solid var(--border-subtle);
+            border-radius: 7px;
+            padding: 0.55rem 0.75rem;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            font-family: var(--font-ui);
+            transition: border-color 0.12s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
+        }
+
+        textarea { resize: vertical; font-family: var(--font-mono); font-size: 0.75rem; }
+
+        /* ============================================================
+           FAILURE LAB
+           ============================================================ */
+        .failure-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+            gap: 0.7rem;
+        }
+
+        .failure-card {
+            background: var(--bg-panel);
+            border: 1.5px solid var(--border-subtle);
+            border-radius: 9px;
+            padding: 0.75rem 0.9rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            position: relative;
+        }
+
+        .failure-card:hover { border-color: var(--border-active); }
+
+        .failure-card.selected {
+            border-color: var(--failure);
+            background: rgba(239, 68, 68, 0.06);
+            box-shadow: 0 0 0 1px rgba(239, 68, 68, 0.3), 0 0 16px rgba(239, 68, 68, 0.15);
+        }
+
+        .failure-card-head {
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .failure-radio {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid #3D5470;
+            flex-shrink: 0;
+            position: relative;
+            transition: all 0.15s;
+        }
+
+        .failure-card.selected .failure-radio {
+            border-color: var(--failure);
+            background: var(--failure);
+        }
+
+        .failure-card.selected .failure-radio::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        .failure-title {
+            font-size: 0.76rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .failure-desc {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            line-height: 1.4;
+        }
+
+        .failure-effect {
+            font-size: 0.64rem;
+            font-family: var(--font-mono);
+            color: #FCA5A5;
+            margin-top: 0.35rem;
+            padding-top: 0.35rem;
+            border-top: 1px dashed rgba(239, 68, 68, 0.2);
+        }
+
+        /* ============================================================
+           DIAGNOSIS PANEL
+           ============================================================ */
+        .diagnosis-panel {
+            background: linear-gradient(180deg, rgba(239, 68, 68, 0.04), transparent);
+            border: 1px solid rgba(239, 68, 68, 0.25);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .diagnosis-banner {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            margin-bottom: 0.85rem;
+            padding-bottom: 0.7rem;
+            border-bottom: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        .diagnosis-banner-icon {
+            width: 28px;
+            height: 28px;
+            border-radius: 7px;
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            display: grid;
+            place-items: center;
+            font-size: 0.85rem;
+        }
+
+        .diagnosis-banner-text {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #FCA5A5;
+            letter-spacing: 0.5px;
+        }
+
+        .diag-row {
+            display: grid;
+            grid-template-columns: 110px 1fr;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            font-size: 0.74rem;
+        }
+
+        .diag-row:last-child { border-bottom: none; }
+
+        .diag-label {
+            color: var(--text-muted);
+            font-weight: 600;
+            font-size: 0.66rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            padding-top: 2px;
+        }
+
+        .diag-value {
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 0.73rem;
+            line-height: 1.5;
+            white-space: pre-line;
+        }
+
+        .diag-value.error { color: #F87171; }
+        .diag-value.fix { color: #6EE7B7; }
+
+        /* ============================================================
+           STATISTICS
+           ============================================================ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 0.6rem;
+        }
+
+        .stat-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 9px;
+            padding: 0.7rem 0.85rem;
+            transition: border-color 0.15s;
+        }
+
+        .stat-card:hover { border-color: var(--border-active); }
+
+        .stat-label {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .stat-value {
+            font-size: 1.15rem;
+            font-weight: 700;
+            font-family: var(--font-mono);
+            color: var(--text-primary);
+            line-height: 1.1;
+        }
+
+        .stat-value.success { color: #34D399; }
+        .stat-value.failed { color: #F87171; }
+        .stat-value.warning { color: #FBBF24; }
+        .stat-value.accent { color: var(--accent-electric); }
+
+        .stat-unit {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            font-weight: 400;
+            margin-left: 2px;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--bg-deep);
+            border-radius: 2px;
+            margin-top: 0.4rem;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan));
+            border-radius: 2px;
+            transition: width 0.4s ease;
+        }
+
+        /* ============================================================
+           BEHIND THE PACKET
+           ============================================================ */
+        .layer-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .layer-item {
+            display: grid;
+            grid-template-columns: 90px 1fr;
+            gap: 0.85rem;
+            align-items: center;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 0.6rem 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .layer-item.active {
+            background: rgba(56, 189, 248, 0.06);
+            border-left-color: var(--accent-cyan);
+            box-shadow: 0 0 16px rgba(34, 211, 238, 0.12);
+        }
+
+        .layer-item.app { border-left-color: #3B82F6; }
+        .layer-item.trans { border-left-color: #10B981; }
+        .layer-item.net { border-left-color: #F59E0B; }
+        .layer-item.link { border-left-color: #A855F7; }
+
+        .layer-name {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            color: var(--text-primary);
+            text-transform: uppercase;
+        }
+
+        .layer-proto {
+            font-size: 0.62rem;
+            font-family: var(--font-mono);
+            color: var(--accent-electric);
+            margin-top: 1px;
+        }
+
+        .layer-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        .layer-down-arrow {
+            text-align: center;
+            color: #334155;
+            font-size: 0.85rem;
+            line-height: 1;
+            margin: -0.1rem 0;
+        }
+
+        /* ============================================================
+           DNS PANEL
+           ============================================================ */
+        .dns-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            padding: 0.5rem;
+        }
+
+        .dns-step {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 8px;
+            padding: 0.55rem 0.9rem;
+            width: 100%;
+            max-width: 340px;
+            font-size: 0.72rem;
+            transition: all 0.25s;
+        }
+
+        .dns-step.active {
+            border-color: var(--accent-cyan);
+            background: rgba(34, 211, 238, 0.06);
+            box-shadow: 0 0 14px var(--info-glow);
+        }
+
+        .dns-step.done {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .dns-step.failed {
+            border-color: var(--failure);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .dns-icon {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            background: var(--bg-elevated);
+            display: grid;
+            place-items: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .dns-step-text { flex: 1; }
+        .dns-step-label { font-size: 0.68rem; color: var(--text-muted); }
+        .dns-step-value { font-size: 0.74rem; font-family: var(--font-mono); color: var(--text-primary); font-weight: 500; }
+
+        .dns-arrow { color: #334155; font-size: 0.8rem; }
+
+        /* ============================================================
+           COMPARISON
+           ============================================================ */
+        .compare-panels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.1rem;
+        }
+
+        .compare-panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 1rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .compare-panel.pop3 { border-top: 3px solid #A855F7; }
+        .compare-panel.imap { border-top: 3px solid #F59E0B; }
+
+        .compare-title {
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+            color: var(--text-primary);
+        }
+
+        .compare-subtitle {
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            margin-bottom: 0.85rem;
+        }
+
+        .compare-flow {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            margin: 0.8rem 0;
+        }
+
+        .compare-node {
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 7px;
+            padding: 0.45rem 0.9rem;
+            font-size: 0.7rem;
+            font-family: var(--font-mono);
+            min-width: 130px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .compare-node.active {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 12px var(--info-glow);
+        }
+
+        .compare-arrow {
+            color: #334155;
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+
+        .compare-arrow.down { }
+        .compare-arrow.updown { color: var(--accent-cyan); }
+
+        .cmd-list-mini {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .cmd-mini {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--bg-card);
+            border: 1px solid var(--border-subtle);
+            border-radius: 6px;
+            padding: 0.4rem 0.65rem;
+            font-size: 0.68rem;
+            font-family: var(--font-mono);
+            cursor: pointer;
+            transition: all 0.12s;
+        }
+
+        .cmd-mini:hover { border-color: var(--border-active); background: var(--bg-elevated); }
+        .cmd-mini.active { border-color: var(--accent-cyan); background: rgba(34, 211, 238, 0.06); }
+
+        .cmd-mini-name {
+            font-weight: 600;
+            min-width: 62px;
+            color: var(--accent-electric);
+        }
+
+        .cmd-mini-desc { color: var(--text-muted); font-family: var(--font-ui); font-size: 0.64rem; }
+
+        /* ============================================================
+           HISTORY TABLE
+           ============================================================ */
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        .history-table th {
+            text-align: left;
+            padding: 0.6rem 0.8rem;
+            color: var(--text-muted);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .history-table td {
+            padding: 0.6rem 0.8rem;
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+        }
+
+        .history-table tr:hover td { background: rgba(30, 41, 59, 0.3); }
+
+        .history-table .sim-id { color: var(--accent-electric); font-weight: 600; }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.15rem 0.55rem;
+            border-radius: 12px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            font-family: var(--font-mono);
+        }
+
+        .badge.success { background: rgba(16, 185, 129, 0.15); color: #34D399; }
+        .badge.failed { background: rgba(239, 68, 68, 0.15); color: #F87171; }
+
+        /* ============================================================
+           EXPERIMENTS
+           ============================================================ */
+        .exp-card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border-subtle);
+            border-radius: 10px;
+            padding: 0.9rem 1.1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            transition: all 0.15s;
+            margin-bottom: 0.6rem;
+        }
+
+        .exp-card:hover { border-color: var(--border-active); }
+        .exp-card.completed { border-left: 3px solid var(--success); }
+
+        .exp-info { flex: 1; min-width: 200px; }
+        .exp-title { font-size: 0.82rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.2rem; }
+        .exp-obj { font-size: 0.7rem; color: var(--text-muted); }
+
+        .exp-actions { display: flex; align-items: center; gap: 0.6rem; }
+
+        /* ============================================================
+           TOAST
+           ============================================================ */
+        .toast-container {
+            position: fixed;
+            bottom: 1.2rem;
+            right: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            z-index: 999;
+            pointer-events: none;
+        }
+
+        .toast {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-active);
+            border-left: 3px solid var(--accent-blue);
+            border-radius: 8px;
+            padding: 0.65rem 0.9rem;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            min-width: 240px;
+            max-width: 340px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+            animation: toastIn 0.25s ease;
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+            gap: 0.55rem;
+        }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .toast.success { border-left-color: var(--success); }
+        .toast.failed { border-left-color: var(--failure); }
+        .toast.warning { border-left-color: var(--warning); }
+
+        .toast-icon { font-size: 1rem; }
+        .toast-msg { flex: 1; }
+
+        /* ============================================================
+           RESPONSIVE
+           ============================================================ */
+        @media (max-width: 1200px) {
+            .grid-main { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2, .grid-3, .compare-panels { grid-template-columns: 1fr; }
+            .page-container { padding: 1rem; }
+            .topo-split { gap: 2rem; }
+        }
+
+        @media (max-width: 640px) {
+            .app-header { padding: 0.6rem 1rem; }
+            .brand-text .tagline { display: none; }
+            .header-metrics { display: none; }
+            .topo-node { min-width: 90px; font-size: 0.65rem; padding: 0.5rem 0.7rem; }
+            .protocol-stream { height: 240px; font-size: 0.68rem; }
+            .xray-grid { grid-template-columns: 1fr; }
+        }
+
+        /* Utility */
+        .mono { font-family: var(--font-mono); }
+        .text-muted { color: var(--text-muted); }
+        .text-success { color: #34D399; }
+        .text-failed { color: #F87171; }
+        .flex { display: flex; }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; }
+        .gap-sm { gap: 0.5rem; }
+        .mt-sm { margin-top: 0.6rem; }
+        .mt-md { margin-top: 1rem; }
+        .mb-sm { margin-bottom: 0.6rem; }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER
+     ============================================================ -->
+<header class="app-header">
+    <div class="brand">
+        <div class="brand-mark">MX</div>
+        <div class="brand-text">
+            <h1>MailFlow X</h1>
+            <div class="tagline">Email Protocol Laboratory &amp; Failure Simulator</div>
+        </div>
+    </div>
+    <div class="header-metrics">
+        <div class="metric-pill">
+            <span class="pulse-dot" id="headerStatusDot"></span>
+            <span id="headerStatusText">READY</span>
+        </div>
+        <div class="metric-pill">
+            <span>SIM</span>
+            <span id="headerSimId" style="color:var(--accent-electric);">#SIM-000</span>
+        </div>
+        <div class="metric-pill">
+            <span>EVENTS</span>
+            <span id="headerEventCount" style="color:var(--accent-electric);">0</span>
+        </div>
+    </div>
+</header>
+
+<!-- ============================================================
+     NAVIGATION
+     ============================================================ -->
+<nav class="main-nav">
+    <a class="nav-link active" data-page="dashboard">Dashboard</a>
+    <a class="nav-link" data-page="smtp">SMTP Lab</a>
+    <a class="nav-link" data-page="pop3imap">POP3 vs IMAP</a>
+    <a class="nav-link" data-page="failure">Failure Lab</a>
+    <a class="nav-link" data-page="xray">Protocol X-Ray</a>
+    <a class="nav-link" data-page="experiments">Experiments</a>
+    <a class="nav-link" data-page="history">History</a>
+    <a class="nav-link" data-page="about">About</a>
+</nav>
+
+<main class="page-container">
+
+    <!-- ============================================================
+         DASHBOARD
+         ============================================================ -->
+    <section id="page-dashboard" class="page active-page">
+
+        <!-- Topology -->
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>Live Network Topology</span>
+                <div class="header-actions">
+                    <span class="chip" id="topoResetBtn" style="cursor:pointer;">RESET</span>
+                    <span class="chip" id="topoLegendBtn">LEGEND</span>
+                </div>
+            </div>
+            <div class="topology-wrap">
+                <div class="topology-flow" id="topologyDashboard"></div>
+            </div>
+        </div>
+
+        <!-- Main grid: left = config + stats, right = stream + xray -->
+        <div class="grid-main mb-sm">
+            <div>
+                <!-- Config -->
+                <div class="card mb-sm">
+                    <div class="card-header">
+                        <span>Simulation Configuration</span>
+                        <span class="text-muted mono" style="font-size:0.65rem;">SMTP · 587</span>
+                    </div>
+                    <div class="grid-2" style="gap:0.7rem;">
+                        <div class="form-group">
+                            <label>Sender</label>
+                            <input type="email" id="cfgSender" value="student@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Recipient</label>
+                            <input type="email" id="cfgRecipient" value="receiver@example.com">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Subject</label>
+                        <input type="text" id="cfgSubject" value="Network Lab Test">
+                    </div>
+                    <div class="form-group">
+                        <label>Message</label>
+                        <textarea id="cfgMessage" rows="2">Hello from MailFlow X.</textarea>
+                    </div>
+                    <div class="flex gap-sm">
+                        <button class="btn btn-primary" id="btnRunSim" style="flex:1;">
+                            ▶ START SIMULATION
+                        </button>
+                        <button class="btn" id="btnBehindPacket" title="View across network layers">
+                            🔬 Behind the Packet
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics -->
+                <div class="card">
+                    <div class="card-header"><span>Network Statistics</span></div>
+                    <div class="stats-grid" id="statsGrid"></div>
+                </div>
+            </div>
+
+            <div>
+                <!-- Protocol Stream -->
+                <div class="card mb-sm">
+                    <div class="card-header">
+                        <span>Live Protocol Stream</span>
+                        <div class="header-actions">
+                            <span class="chip" id="streamClearBtn">CLEAR</span>
+                        </div>
+                    </div>
+                    <div class="filter-chips mb-sm" id="streamFilters">
+                        <span class="chip active" data-filter="all">ALL</span>
+                        <span class="chip" data-filter="smtp">SMTP</span>
+                        <span class="chip" data-filter="pop3">POP3</span>
+                        <span class="chip" data-filter="imap">IMAP</span>
+                        <span class="chip" data-filter="dns">DNS</span>
+                        <span class="chip" data-filter="tcp">TCP</span>
+                        <span class="chip" data-filter="error">ERROR</span>
+                    </div>
+                    <div class="protocol-stream" id="protocolStream">
+                        <div class="stream-line system">
+                            <span class="stream-time">--:--:--</span>
+                            <span class="stream-content">MailFlow X ready. Start a simulation to capture protocol traffic.</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- X-Ray summary -->
+                <div class="card">
+                    <div class="card-header">
+                        <span>Protocol X-Ray</span>
+                        <span class="text-muted mono" style="font-size:0.62rem;">click any stream line</span>
+                    </div>
+                    <div id="xrayCompact" class="xray-panel">
+                        <div class="xray-empty">No event selected. Click a protocol line to inspect.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline / Replay -->
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>Replay Timeline</span>
+                <div class="header-actions">
+                    <span class="text-muted mono" style="font-size:0.65rem;" id="timelineCounter">— / —</span>
+                </div>
+            </div>
+            <div class="timeline-track" id="timelineTrack">
+                <div class="text-muted" style="padding:1rem; font-size:0.72rem;">No simulation yet.</div>
+            </div>
+            <div class="replay-controls">
+                <button class="btn btn-sm" id="btnTlFirst" disabled>⏮ First</button>
+                <button class="btn btn-sm" id="btnTlPrev" disabled>◀ Prev</button>
+                <button class="btn btn-sm btn-primary" id="btnTlPlay" disabled>▶ Play</button>
+                <button class="btn btn-sm" id="btnTlNext" disabled>Next ▶</button>
+                <button class="btn btn-sm" id="btnTlLast" disabled>Last ⏭</button>
+            </div>
+        </div>
+
+        <!-- Diagnosis -->
+        <div class="card">
+            <div class="card-header"><span>Automatic Diagnosis</span></div>
+            <div id="diagnosisPanel">
+                <div class="xray-empty">No failures detected. Run a simulation to begin analysis.</div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ============================================================
+         SMTP LAB
+         ============================================================ -->
+    <section id="page-smtp" class="page">
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>SMTP Transaction Laboratory</span>
+                <span class="text-muted mono" style="font-size:0.65rem;">RFC 5321</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.85rem;">
+                Run a complete SMTP conversation: DNS/MX lookup → TCP handshake → EHLO → STARTTLS → AUTH → MAIL FROM → RCPT TO → DATA → delivery.
+                All events feed the shared simulation engine — topology, timeline, protocol stream and X-Ray update together.
+            </p>
+            <div class="grid-2" style="gap:0.7rem;">
+                <div class="form-group">
+                    <label>Sender</label>
+                    <input type="email" id="smtpLabSender" value="student@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Recipient</label>
+                    <input type="email" id="smtpLabRecipient" value="receiver@example.com">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Subject</label>
+                <input type="text" id="smtpLabSubject" value="Network Lab Test">
+            </div>
+            <div class="form-group">
+                <label>Message body</label>
+                <textarea id="smtpLabMessage" rows="2">Hello from MailFlow X.</textarea>
+            </div>
+            <div class="flex gap-sm">
+                <button class="btn btn-primary" id="btnSmtpLabRun" style="flex:1;">▶ RUN SMTP TRANSACTION</button>
+                <button class="btn" id="btnSmtpLabWithFailure" title="Inject selected failure and run">
+                    ⚡ RUN WITH FAILURE
+                </button>
+            </div>
+        </div>
+
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>SMTP Command Reference</span>
+                <span class="text-muted mono" style="font-size:0.62rem;">click to inspect</span>
+            </div>
+            <div class="cmd-list-mini" id="smtpCmdRef"></div>
+        </div>
+
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>DNS / MX Lookup Visualization</span>
+                <button class="btn btn-sm" id="btnDnsRun">▶ RUN DNS LOOKUP</button>
+            </div>
+            <div class="dns-flow" id="dnsFlow">
+                <div class="dns-step" data-step="query">
+                    <div class="dns-icon">?</div>
+                    <div class="dns-step-text">
+                        <div class="dns-step-label">DNS Query</div>
+                        <div class="dns-step-value">A / MX record for example.com</div>
+                    </div>
+                </div>
+                <div class="dns-arrow">↓</div>
+                <div class="dns-step" data-step="mx">
+                    <div class="dns-icon">MX</div>
+                    <div class="dns-step-text">
+                        <div class="dns-step-label">MX Record</div>
+                        <div class="dns-step-value">mail.example.com</div>
+                    </div>
+                </div>
+                <div class="dns-arrow">↓</div>
+                <div class="dns-step" data-step="ip">
+                    <div class="dns-icon">IP</div>
+                    <div class="dns-step-text">
+                        <div class="dns-step-label">Resolved IP</div>
+                        <div class="dns-step-value">192.0.2.10</div>
+                    </div>
+                </div>
+                <div class="dns-arrow">↓</div>
+                <div class="dns-step" data-step="connect">
+                    <div class="dns-icon">→</div>
+                    <div class="dns-step-text">
+                        <div class="dns-step-label">SMTP Connection</div>
+                        <div class="dns-step-value">mail.example.com:587</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         POP3 vs IMAP
+         ============================================================ -->
+    <section id="page-pop3imap" class="page">
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>POP3 vs IMAP — Live Comparative Simulation</span>
+                <div class="header-actions">
+                    <button class="btn btn-sm btn-primary" id="btnCompareRun">▶ RUN BOTH PROTOCOLS</button>
+                </div>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary);">
+                Both sessions run against the same simulated mailbox. Watch how POP3 downloads and removes while IMAP synchronizes state.
+            </p>
+        </div>
+
+        <div class="compare-panels mb-sm">
+            <!-- POP3 -->
+            <div class="compare-panel pop3">
+                <div class="compare-title">POP3 — Post Office Protocol v3</div>
+                <div class="compare-subtitle">Port 110 · Download-and-delete model</div>
+                <div class="compare-flow">
+                    <div class="compare-node" id="pop3NodeServer">MAIL SERVER</div>
+                    <div class="compare-arrow down">↓</div>
+                    <div class="compare-node" id="pop3NodeTransfer">POP3 TRANSFER</div>
+                    <div class="compare-arrow down">↓</div>
+                    <div class="compare-node" id="pop3NodeClient">EMAIL CLIENT</div>
+                </div>
+                <div class="cmd-list-mini" id="pop3CmdList"></div>
+                <div style="margin-top:0.75rem; font-size:0.7rem; color:var(--text-muted); line-height:1.5;">
+                    • Messages downloaded to local device<br>
+                    • Server copy typically removed after RETR+DELE<br>
+                    • No cross-device synchronization<br>
+                    • Simple but stateful on a single client
+                </div>
+            </div>
+
+            <!-- IMAP -->
+            <div class="compare-panel imap">
+                <div class="compare-title">IMAP — Internet Message Access Protocol</div>
+                <div class="compare-subtitle">Port 143 · Server-side state model</div>
+                <div class="compare-flow">
+                    <div class="compare-node" id="imapNodeServer">MAIL SERVER</div>
+                    <div class="compare-arrow updown">↕</div>
+                    <div class="compare-node" id="imapNodeTransfer">IMAP SYNC</div>
+                    <div class="compare-arrow updown">↕</div>
+                    <div class="compare-node" id="imapNodeClient">EMAIL CLIENT</div>
+                </div>
+                <div class="cmd-list-mini" id="imapCmdList"></div>
+                <div style="margin-top:0.75rem; font-size:0.7rem; color:var(--text-muted); line-height:1.5;">
+                    • Messages remain on the server<br>
+                    • Flags (read/unread/flagged) synchronized<br>
+                    • Multiple devices see same state<br>
+                    • Folder hierarchy supported
+                </div>
+            </div>
+        </div>
+
+        <div class="card mb-sm">
+            <div class="card-header"><span>Comparison Output</span></div>
+            <div id="compareOutput" class="xray-panel">
+                <div class="xray-empty">Run both protocols to compare download vs synchronization behaviour.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         FAILURE LAB
+         ============================================================ -->
+    <section id="page-failure" class="page">
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>Failure Injection Lab — "Break the Mail"</span>
+                <div class="header-actions">
+                    <button class="btn btn-sm" id="btnFailureClear">CLEAR</button>
+                </div>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.85rem;">
+                Select exactly one failure scenario. The shared simulation engine will reroute the topology,
+                emit the correct protocol error, mark the timeline, and trigger automatic diagnosis.
+            </p>
+            <div class="failure-grid" id="failureGrid"></div>
+            <div class="flex gap-sm mt-md">
+                <button class="btn btn-danger" id="btnFailureRun" style="flex:1;">⚡ RUN FAILURE SIMULATION</button>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="card">
+                <div class="card-header"><span>Failure Trace</span></div>
+                <div class="protocol-stream" id="failureStream" style="height:240px;">
+                    <div class="stream-line system">
+                        <span class="stream-time">--:--:--</span>
+                        <span class="stream-content">Select a failure scenario and run the simulation.</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <div class="card-header"><span>Diagnosis</span></div>
+                <div id="failureDiagnosis">
+                    <div class="xray-empty">Diagnosis will appear here after a failed simulation.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         PROTOCOL X-RAY (full page)
+         ============================================================ -->
+    <section id="page-xray" class="page">
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>Protocol X-Ray — Event Inspector</span>
+                <span class="text-muted mono" style="font-size:0.62rem;" id="xrayEventCounter">0 events captured</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.85rem;">
+                Every event emitted by the simulation engine is inspectable. Click any row to view protocol, command, response, layers, ports and meaning.
+            </p>
+            <div id="xrayFullList" class="protocol-stream" style="height:200px; margin-bottom:0.9rem;">
+                <div class="stream-line system">
+                    <span class="stream-time">--:--:--</span>
+                    <span class="stream-content">No events. Run a simulation first.</span>
+                </div>
+            </div>
+            <div id="xrayFullDetail" class="xray-panel">
+                <div class="xray-empty">Select an event above to inspect it.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         EXPERIMENTS
+         ============================================================ -->
+    <section id="page-experiments" class="page">
+        <div class="card mb-sm">
+            <div class="card-header">
+                <span>Laboratory Experiments</span>
+                <span class="text-muted mono" style="font-size:0.65rem;" id="expScore">0 / 60 pts</span>
+            </div>
+            <p style="font-size:0.75rem; color:var(--text-secondary); margin-bottom:0.85rem;">
+                Each experiment runs a real simulation through the shared engine. Complete them to score points.
+            </p>
+            <div id="experimentList"></div>
+        </div>
+
+        <div class="card">
+            <div class="card-header"><span>Experiment Result</span></div>
+            <div id="experimentResult">
+                <div class="xray-empty">Run an experiment to see its diagnosis and explanation.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         HISTORY
+         ============================================================ -->
+    <section id="page-history" class="page">
+        <div class="card">
+            <div class="card-header">
+                <span>Simulation History</span>
+                <button class="btn btn-sm" id="btnHistoryClear">CLEAR</button>
+            </div>
+            <table class="history-table">
+                <thead>
+                    <tr>
+                        <th>Sim ID</th>
+                        <th>Timestamp</th>
+                        <th>Protocol</th>
+                        <th>Scenario</th>
+                        <th>Result</th>
+                        <th>Duration</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="historyBody">
+                    <tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No simulations recorded yet.</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <!-- ============================================================
+         ABOUT
+         ============================================================ -->
+    <section id="page-about" class="page">
+        <div class="card mb-sm">
+            <div class="card-header"><span>MailFlow X</span></div>
+            <p style="font-size:1rem; font-weight:600; color:var(--text-primary); margin-bottom:0.4rem;">
+                Interactive Email Protocol Failure &amp; Recovery Simulator
+            </p>
+            <p style="font-size:0.78rem; color:var(--text-secondary); line-height:1.6;">
+                MailFlow X is an educational network laboratory for exploring the application-layer protocols
+                that power email delivery. It simulates SMTP, POP3, IMAP, DNS and TCP entirely in the browser —
+                no real emails, credentials or external servers are ever used.
+            </p>
+        </div>
+
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-header"><span>Protocols</span></div>
+                <ul style="list-style:none; font-size:0.74rem; color:var(--text-secondary); line-height:2;">
+                    <li>▸ SMTP — RFC 5321</li>
+                    <li>▸ POP3 — RFC 1939</li>
+                    <li>▸ IMAP — RFC 3501</li>
+                    <li>▸ DNS — RFC 1035</li>
+                    <li>▸ TCP — RFC 793</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-header"><span>Features</span></div>
+                <ul style="list-style:none; font-size:0.74rem; color:var(--text-secondary); line-height:2;">
+                    <li>▸ Live topology animation</li>
+                    <li>▸ Failure injection lab</li>
+                    <li>▸ Protocol X-Ray inspector</li>
+                    <li>▸ Replay timeline</li>
+                    <li>▸ Automatic diagnosis</li>
+                </ul>
+            </div>
+            <div class="card">
+                <div class="card-header"><span>Constraints</span></div>
+                <ul style="list-style:none; font-size:0.74rem; color:var(--text-secondary); line-height:2;">
+                    <li>▸ No real email delivery</li>
+                    <li>▸ No external services</li>
+                    <li>▸ No credentials required</li>
+                    <li>▸ Fully client-side</li>
+                    <li>▸ Offline-capable</li>
+                </ul>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+/* ============================================================
+   MAILFLOW X — UNIFIED SIMULATION ENGINE
+   ------------------------------------------------------------
+   All UI components (topology, protocol stream, timeline,
+   X-Ray, statistics, diagnosis) react to the SAME simulation
+   state. Events are the single source of truth.
+   ============================================================ */
+
+/* ---------- GLOBAL STATE ---------- */
+const SIM = {
+    simId: 'SIM-000',
+    simCount: 0,
+    status: 'idle',            // idle | running | success | failed
+    protocol: '—',
+    events: [],                // current simulation events
+    currentEventIndex: -1,
+    timeline: [],              // timeline step labels
+    stats: {
+        startTime: 0,
+        endTime: 0,
+        commands: 0,
+        successSteps: 0,
+        failedSteps: 0,
+        latencyMs: 0,
+        eventsProcessed: 0
+    },
+    selectedFailure: null,
+    pop3Events: [],
+    imapEvents: [],
+    activeStreamFilter: 'all',
+    xraySelection: null,
+    history: [],
+    experiments: [],
+    score: 0,
+    isPlaying: false,
+    playTimer: null
+};
+
+/* ---------- PROTOCOL MEANINGS (used by X-Ray) ---------- */
+const PROTOCOL_MEANINGS = {
+    // DNS
+    'DNS Query':        { app: 'DNS', trans: 'UDP', port: 53,  meaning: 'Client asks the DNS resolver for the mail exchanger (MX) record of the recipient domain.' },
+    'MX Response':      { app: 'DNS', trans: 'UDP', port: 53,  meaning: 'DNS resolver returns the MX record pointing to the mail server hostname.' },
+    'A Response':       { app: 'DNS', trans: 'UDP', port: 53,  meaning: 'DNS resolver returns the IPv4 address of the mail server.' },
+    // TCP
+    'SYN':              { app: 'TCP', trans: 'TCP', port: 587, meaning: 'Client initiates a TCP three-way handshake with the SMTP server.' },
+    'SYN-ACK':          { app: 'TCP', trans: 'TCP', port: 587, meaning: 'Server acknowledges the SYN and sends its own sequence number.' },
+    'ACK':              { app: 'TCP', trans: 'TCP', port: 587, meaning: 'Client acknowledges the server SYN; connection established.' },
+    // SMTP
+    '220 Greeting':     { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server announces readiness for an SMTP conversation.' },
+    'EHLO':             { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Client introduces itself and requests the list of supported extensions.' },
+    '250 EHLO OK':      { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server accepts EHLO and lists capabilities such as STARTTLS and AUTH.' },
+    'STARTTLS':         { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Client requests an upgrade of the plaintext channel to TLS.' },
+    '220 TLS Ready':    { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server accepts STARTTLS; a TLS handshake now begins.' },
+    'AUTH LOGIN':       { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Client begins SASL LOGIN authentication using base64-encoded credentials.' },
+    '235 Auth OK':      { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server accepts credentials; the session is now authenticated.' },
+    'MAIL FROM':        { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Client specifies the envelope sender of the message.' },
+    '250 MAIL OK':      { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server accepts the sender address.' },
+    'RCPT TO':          { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Client specifies one recipient for the message.' },
+    '250 RCPT OK':      { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server accepts the recipient address.' },
+    '550 RCPT Fail':    { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server rejects the recipient address (e.g. user unknown).' },
+    'DATA':             { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Client signals it is about to transmit the message content.' },
+    '354 Data Go':      { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server tells the client to start sending the message body.' },
+    '250 Accepted':     { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Server accepted the message and queued it for delivery.' },
+    '552 Mailbox Full': { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'Recipient mailbox has exceeded its quota; delivery is refused.' },
+    'Connection Refused': { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'No process is listening on the destination port.' },
+    'DNS NXDOMAIN':     { app: 'DNS',  trans: 'UDP', port: 53,  meaning: 'The queried domain does not exist in the DNS namespace.' },
+    'Connection Timeout': { app: 'TCP', trans: 'TCP', port: 587, meaning: 'No response from the server within the timeout window.' },
+    '454 TLS Unavailable': { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'The server does not support or cannot start TLS.' },
+    '535 Auth Failed':  { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'The server rejected the supplied authentication credentials.' },
+    '550 Sender Fail':  { app: 'SMTP', trans: 'TCP', port: 587, meaning: 'The server rejected the envelope sender address.' },
+    // POP3
+    'USER':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Client sends the mailbox username.' },
+    'PASS':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Client sends the mailbox password (masked).' },
+    '+OK Login':        { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Server accepted credentials; mailbox is locked for this session.' },
+    'STAT':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Client requests message count and total size.' },
+    'LIST':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Client requests the list of message numbers and sizes.' },
+    'RETR':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Client retrieves the full content of a specific message.' },
+    'DELE':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Client marks a message for deletion (applied at QUIT).' },
+    'QUIT':             { app: 'POP3', trans: 'TCP', port: 110, meaning: 'Ends the POP3 session and commits deletions.' },
+    // IMAP
+    'LOGIN':            { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Client authenticates with username and password.' },
+    'OK LOGIN':         { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Server accepted credentials.' },
+    'SELECT INBOX':     { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Client opens the INBOX mailbox for read/write access.' },
+    'OK INBOX':         { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Server selected the mailbox; message count is returned.' },
+    'FETCH':            { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Client requests message headers or bodies from the mailbox.' },
+    'STORE':            { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Client updates flags on a message (read/unread/flagged).' },
+    'EXPUNGE':          { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Client permanently removes messages marked as deleted.' },
+    'LOGOUT':           { app: 'IMAP', trans: 'TCP', port: 143, meaning: 'Client closes the IMAP session gracefully.' }
+};
+
+/* ---------- FAILURE DEFINITIONS ---------- */
+const FAILURES = [
+    { id:'dns_unavailable', label:'DNS Unavailable', desc:'Resolver cannot be reached.',
+      effect:'MX lookup fails — no SMTP connection attempted.' },
+    { id:'smtp_offline', label:'SMTP Server Offline', desc:'No process listening on port 587.',
+      effect:'TCP connection refused at SMTP Server.' },
+    { id:'smtp_port_blocked', label:'SMTP Port Blocked', desc:'Firewall drops packets to port 587.',
+      effect:'TCP connection times out before greeting.' },
+    { id:'starttls_failure', label:'STARTTLS Failure', desc:'Server cannot negotiate TLS.',
+      effect:'454 response; session aborts before AUTH.' },
+    { id:'auth_failure', label:'Authentication Failure', desc:'Wrong credentials supplied.',
+      effect:'535 response; MAIL FROM never issued.' },
+    { id:'invalid_sender', label:'Invalid Sender', desc:'Sender address rejected by server.',
+      effect:'550 at MAIL FROM; RCPT TO never issued.' },
+    { id:'invalid_recipient', label:'Invalid Recipient', desc:'Recipient does not exist.',
+      effect:'550 at RCPT TO; DATA never issued.' },
+    { id:'mailbox_full', label:'Mailbox Full', desc:'Recipient quota exceeded.',
+      effect:'552 at delivery; message rejected.' },
+    { id:'network_delay', label:'Network Delay', desc:'High latency between client and server.',
+      effect:'Simulated 3000 ms delay between events.' },
+    { id:'pop3_auth_failure', label:'POP3 Auth Failure', desc:'POP3 credentials rejected.',
+      effect:'-ERR at PASS; mailbox not locked.' },
+    { id:'imap_auth_failure', label:'IMAP Auth Failure', desc:'IMAP credentials rejected.',
+      effect:'NO LOGIN failed; SELECT not permitted.' },
+    { id:'connection_timeout', label:'Connection Timeout', desc:'No response from server.',
+      effect:'TCP times out before any SMTP exchange.' }
+];
+
+/* ============================================================
+   UTILITIES
+   ============================================================ */
+function nowTime() {
+    const d = new Date();
+    return d.toTimeString().split(' ')[0];
+}
+
+function toast(msg, type = 'success') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = 'toast ' + type;
+    const icons = { success:'✓', failed:'✕', warning:'⚠', info:'ℹ' };
+    t.innerHTML = `<span class="toast-icon">${icons[type] || 'ℹ'}</span><span class="toast-msg">${msg}</span>`;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity 0.3s'; }, 3200);
+    setTimeout(() => t.remove(), 3600);
+}
+
+function nextSimId() {
+    SIM.simCount++;
+    const n = String(SIM.simCount).padStart(3, '0');
+    return 'SIM-' + n;
+}
+
+function setHeaderStatus(status) {
+    const dot = document.getElementById('headerStatusDot');
+    const txt = document.getElementById('headerStatusText');
+    dot.className = 'pulse-dot';
+    if (status === 'running') { dot.classList.add('processing'); txt.textContent = 'RUNNING'; }
+    else if (status === 'failed') { dot.classList.add('failed'); txt.textContent = 'FAILED'; }
+    else if (status === 'success') { txt.textContent = 'READY'; }
+    else { txt.textContent = 'READY'; }
+}
+
+/* ============================================================
+   TOPOLOGY ENGINE
+   ============================================================ */
+const TOPO_NODES = [
+    { id:'topo-client',  label:'CLIENT',          status:'idle' },
+    { id:'topo-dns',     label:'DNS',             status:'idle' },
+    { id:'topo-smtp',    label:'SMTP SERVER',     status:'idle' },
+    { id:'topo-relay',   label:'MAIL RELAY',      status:'idle' },
+    { id:'topo-mailbox', label:'RECIPIENT MAILBOX', status:'idle' },
+    { id:'topo-pop3',    label:'POP3',            status:'idle' },
+    { id:'topo-imap',    label:'IMAP',            status:'idle' },
+    { id:'topo-deviceA', label:'DEVICE A',        status:'idle' },
+    { id:'topo-deviceB', label:'DEVICE B',        status:'idle' }
+];
+
+const TOPO_CONNECTIONS = [
+    { from:'topo-client', to:'topo-dns',     id:'conn-client-dns' },
+    { from:'topo-dns',    to:'topo-smtp',    id:'conn-dns-smtp' },
+    { from:'topo-smtp',   to:'topo-relay',   id:'conn-smtp-relay' },
+    { from:'topo-relay',  to:'topo-mailbox', id:'conn-relay-mailbox' },
+    { from:'topo-mailbox',to:'topo-pop3',    id:'conn-mailbox-pop3' },
+    { from:'topo-mailbox',to:'topo-imap',    id:'conn-mailbox-imap' },
+    { from:'topo-pop3',   to:'topo-deviceA', id:'conn-pop3-deviceA' },
+    { from:'topo-imap',   to:'topo-deviceB', id:'conn-imap-deviceB' }
+];
+
+function buildTopology() {
+    const el = document.getElementById('topologyDashboard');
+    if (!el) return;
+
+    const nodeHtml = (id, label) => `
+        <div class="topo-node idle" id="${id}" data-node="${id}">
+            <span class="node-label">${label}</span>
+            <span class="node-status" data-status>IDLE</span>
+            <div class="node-popover">
+                <strong>${label}</strong>
+                Status: <span data-pop-status>IDLE</span>
+            </div>
+        </div>`;
+
+    const connectorHtml = (connId) => `
+        <div class="topo-connector" id="${connId}" data-conn="${connId}">
+            <div class="packet-dot" style="display:none;"></div>
+        </div>`;
+
+    el.innerHTML = `
+        <div class="topo-row">${nodeHtml('topo-client','CLIENT')}</div>
+        ${connectorHtml('conn-client-dns')}
+        <div class="topo-row">${nodeHtml('topo-dns','DNS')}</div>
+        ${connectorHtml('conn-dns-smtp')}
+        <div class="topo-row">${nodeHtml('topo-smtp','SMTP SERVER')}</div>
+        ${connectorHtml('conn-smtp-relay')}
+        <div class="topo-row">${nodeHtml('topo-relay','MAIL RELAY')}</div>
+        ${connectorHtml('conn-relay-mailbox')}
+        <div class="topo-row">${nodeHtml('topo-mailbox','RECIPIENT MAILBOX')}</div>
+        <div class="topo-split">
+            <div class="topo-branch">
+                ${connectorHtml('conn-mailbox-pop3')}
+                ${nodeHtml('topo-pop3','POP3')}
+                ${connectorHtml('conn-pop3-deviceA')}
+                ${nodeHtml('topo-deviceA','DEVICE A')}
+            </div>
+            <div class="topo-branch">
+                ${connectorHtml('conn-mailbox-imap')}
+                ${nodeHtml('topo-imap','IMAP')}
+                ${connectorHtml('conn-imap-deviceB')}
+                ${nodeHtml('topo-deviceB','DEVICE B')}
+            </div>
+        </div>
+    `;
+}
+
+function setNodeState(nodeId, state, statusText) {
+    const node = document.getElementById(nodeId);
+    if (!node) return;
+    node.classList.remove('idle','state-processing','state-success','state-failed','state-warning');
+    if (state === 'processing') node.classList.add('state-processing');
+    else if (state === 'success') node.classList.add('state-success');
+    else if (state === 'failed') node.classList.add('state-failed');
+    else if (state === 'warning') node.classList.add('state-warning');
+    else node.classList.add('idle');
+
+    const st = node.querySelector('[data-status]');
+    const ps = node.querySelector('[data-pop-status]');
+    const label = (statusText || state).toUpperCase();
+    if (st) st.textContent = label;
+    if (ps) ps.textContent = label;
+
+    // Activate/deactivate adjacent connectors
+    document.querySelectorAll('.topo-connector').forEach(c => c.classList.remove('active'));
+}
+
+function activateConnection(connId, animate = true) {
+    const c = document.getElementById(connId);
+    if (!c) return;
+    c.classList.add('active');
+    const dot = c.querySelector('.packet-dot');
+    if (dot) dot.style.display = animate ? 'block' : 'none';
+}
+
+function resetTopology() {
+    TOPO_NODES.forEach(n => setNodeState(n.id, 'idle', 'idle'));
+    document.querySelectorAll('.topo-connector').forEach(c => {
+        c.classList.remove('active');
+        const dot = c.querySelector('.packet-dot');
+        if (dot) dot.style.display = 'none';
+    });
+}
+
+/* ============================================================
+   STATISTICS
+   ============================================================ */
+function renderStats() {
+    const grid = document.getElementById('statsGrid');
+    if (!grid) return;
+    const s = SIM.stats;
+    const duration = s.endTime && s.startTime ? ((s.endTime - s.startTime)/1000).toFixed(2) : (s.startTime ? ((Date.now()-s.startTime)/1000).toFixed(2) : '0.00');
+    const total = s.successSteps + s.failedSteps;
+    const pct = total ? Math.round((s.successSteps/total)*100) : 0;
+    const latency = s.latencyMs ? s.latencyMs + ' ms' : '—';
+
+    grid.innerHTML = `
+        <div class="stat-card">
+            <div class="stat-label">Duration</div>
+            <div class="stat-value accent">${duration}<span class="stat-unit">s</span></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Commands</div>
+            <div class="stat-value">${s.commands}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Successful</div>
+            <div class="stat-value success">${s.successSteps}</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Failed</div>
+            <div class="stat-value ${s.failedSteps?'failed':''}">${s.failedSteps}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Latency</div>
+            <div class="stat-value ${s.latencyMs>1000?'warning':''}" style="font-size:0.9rem;">${latency}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Events</div>
+            <div class="stat-value">${s.eventsProcessed}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Protocol</div>
+            <div class="stat-value accent" style="font-size:0.85rem;">${SIM.protocol}</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Connection</div>
+            <div class="stat-value ${SIM.status==='failed'?'failed':SIM.status==='success'?'success':''}" style="font-size:0.85rem;">${SIM.status.toUpperCase()}</div>
+        </div>
+    `;
+}
+
+/* ============================================================
+   PROTOCOL STREAM
+   ============================================================ */
+function addStreamEvent(ev) {
+    const stream = document.getElementById('protocolStream');
+    if (!stream) return;
+
+    // Remove placeholder
+    const placeholder = stream.querySelector('.stream-line.system');
+    if (placeholder && placeholder.dataset.placeholder === 'true') placeholder.remove();
+
+    const line = document.createElement('div');
+    line.className = 'stream-line ' + (ev.side || 'system');
+    line.dataset.protocol = (ev.protocol || '').toLowerCase();
+    line.dataset.eventIndex = ev.index;
+    if (ev.highlight) line.classList.add('highlight');
+
+    const protoClass = {
+        smtp: 'proto-smtp', pop3: 'proto-pop3', imap: 'proto-imap',
+        dns: 'proto-dns', tcp: 'proto-tcp', error: 'proto-err'
+    }[ (ev.protocol||'').toLowerCase() ] || 'proto-smtp';
+
+    line.innerHTML = `
+        <span class="stream-time">${ev.time}</span>
+        <span class="stream-proto ${protoClass}">${(ev.protocol||'—').toUpperCase()}</span>
+        <span class="stream-content">${ev.text}</span>
+    `;
+
+    line.addEventListener('click', () => {
+        inspectEventByIndex(parseInt(ev.index));
+    });
+
+    stream.appendChild(line);
+    applyStreamFilter();
+    stream.scrollTop = stream.scrollHeight;
+}
+
+function applyStreamFilter() {
+    const f = SIM.activeStreamFilter;
+    document.querySelectorAll('#protocolStream .stream-line').forEach(l => {
+        if (f === 'all') { l.style.display = ''; return; }
+        const proto = (l.dataset.protocol || '').toLowerCase();
+        l.style.display = (proto === f) ? '' : 'none';
+    });
+}
+
+function clearStream() {
+    const stream = document.getElementById('protocolStream');
+    if (!stream) return;
+    stream.innerHTML = `<div class="stream-line system" data-placeholder="true">
+        <span class="stream-time">--:--:--</span>
+        <span class="stream-content">Stream cleared. Start a simulation to capture traffic.</span>
+    </div>`;
+}
+
+/* ============================================================
+   X-RAY (compact + full)
+   ============================================================ */
+function inspectEventByIndex(index) {
+    const ev = SIM.events[index];
+    if (!ev) return;
+    SIM.xraySelection = index;
+    renderXray(ev, 'xrayCompact');
+    renderXray(ev, 'xrayFullDetail');
+    // Highlight in full list
+    document.querySelectorAll('#xrayFullList .stream-line').forEach(l => {
+        l.style.background = '';
+        if (parseInt(l.dataset.eventIndex) === index) l.style.background = 'rgba(56,189,248,0.08)';
+    });
+}
+
+function renderXray(ev, containerId) {
+    const el = document.getElementById(containerId);
+    if (!el) return;
+
+    const meaning = PROTOCOL_MEANINGS[ev.commandKey] || {};
+    const statusClass = ev.status === 'success' ? 'success' : ev.status === 'failed' ? 'failed' : ev.status === 'warning' ? 'warning' : '';
+
+    el.innerHTML = `
+        <div class="xray-header">
+            <span class="xray-badge">${(ev.protocol||'—').toUpperCase()}</span>
+            <span class="xray-command">${ev.command || '—'}</span>
+        </div>
+        <div class="xray-grid">
+            <div class="xray-item">
+                <span class="xray-label">Response</span>
+                <span class="xray-value ${statusClass}">${ev.response || '—'}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Status</span>
+                <span class="xray-value ${statusClass}">${(ev.status||'—').toUpperCase()}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Sender</span>
+                <span class="xray-value">${ev.sender || '—'}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Receiver</span>
+                <span class="xray-value">${ev.receiver || '—'}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Application Layer</span>
+                <span class="xray-value">${meaning.app || ev.protocol || '—'}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Transport Layer</span>
+                <span class="xray-value">${meaning.trans || 'TCP'}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Port</span>
+                <span class="xray-value">${meaning.port || ev.port || '—'}</span>
+            </div>
+            <div class="xray-item">
+                <span class="xray-label">Time</span>
+                <span class="xray-value">${ev.time || '—'}</span>
+            </div>
+            <div class="xray-meaning">
+                <strong style="color:var(--accent-electric); font-size:0.65rem; letter-spacing:0.4px;">MEANING</strong><br>
+                ${ev.meaning || meaning.meaning || 'No additional information available for this event.'}
+            </div>
+        </div>
+    `;
+}
+
+function renderXrayList() {
+    const list = document.getElementById('xrayFullList');
+    if (!list) return;
+    if (!SIM.events.length) {
+        list.innerHTML = `<div class="stream-line system"><span class="stream-time">--:--:--</span><span class="stream-content">No events. Run a simulation first.</span></div>`;
+        return;
+    }
+    list.innerHTML = '';
+    SIM.events.forEach((ev, i) => {
+        const line = document.createElement('div');
+        line.className = 'stream-line ' + (ev.side || 'system');
+        line.dataset.eventIndex = i;
+        const protoClass = {
+            smtp:'proto-smtp', pop3:'proto-pop3', imap:'proto-imap',
+            dns:'proto-dns', tcp:'proto-tcp', error:'proto-err'
+        }[(ev.protocol||'').toLowerCase()] || 'proto-smtp';
+        line.innerHTML = `
+            <span class="stream-time">${ev.time}</span>
+            <span class="stream-proto ${protoClass}">${(ev.protocol||'—').toUpperCase()}</span>
+            <span class="stream-content">${ev.text}</span>
+        `;
+        line.addEventListener('click', () => inspectEventByIndex(i));
+        list.appendChild(line);
+    });
+    document.getElementById('xrayEventCounter').textContent = SIM.events.length + ' events captured';
+}
+
+/* ============================================================
+   TIMELINE / REPLAY
+   ============================================================ */
+function renderTimeline() {
+    const track = document.getElementById('timelineTrack');
+    if (!track) return;
+    if (!SIM.timeline.length) {
+        track.innerHTML = `<div class="text-muted" style="padding:1rem; font-size:0.72rem;">No simulation yet.</div>`;
+        document.getElementById('timelineCounter').textContent = '— / —';
+        updateReplayButtons();
+        return;
+    }
+
+    track.innerHTML = '';
+    SIM.timeline.forEach((step, i) => {
+        const stepEl = document.createElement('div');
+        stepEl.className = 'tl-step';
+        if (step.status === 'done') stepEl.classList.add('done');
+        if (step.status === 'failed') stepEl.classList.add('failed');
+        if (i === SIM.currentEventIndex) stepEl.classList.add('current');
+        stepEl.innerHTML = `
+            <div class="tl-node">${i+1}</div>
+            <div class="tl-label">${step.label}</div>
+        `;
+        stepEl.addEventListener('click', () => gotoEvent(i));
+        track.appendChild(stepEl);
+
+        if (i < SIM.timeline.length - 1) {
+            const conn = document.createElement('div');
+            conn.className = 'tl-connector';
+            if (step.status === 'done') conn.classList.add('done');
+            if (step.status === 'failed') conn.classList.add('failed');
+            track.appendChild(conn);
+        }
+    });
+
+    const total = SIM.timeline.length;
+    const cur = SIM.currentEventIndex >= 0 ? SIM.currentEventIndex + 1 : 0;
+    document.getElementById('timelineCounter').textContent = cur + ' / ' + total;
+    updateReplayButtons();
+}
+
+function updateReplayButtons() {
+    const has = SIM.timeline.length > 0;
+    document.getElementById('btnTlFirst').disabled = !has || SIM.currentEventIndex <= 0;
+    document.getElementById('btnTlPrev').disabled  = !has || SIM.currentEventIndex <= 0;
+    document.getElementById('btnTlNext').disabled  = !has || SIM.currentEventIndex >= SIM.timeline.length - 1;
+    document.getElementById('btnTlLast').disabled  = !has || SIM.currentEventIndex >= SIM.timeline.length - 1;
+    document.getElementById('btnTlPlay').disabled  = !has;
+}
+
+function gotoEvent(index) {
+    if (index < 0 || index >= SIM.timeline.length) return;
+    SIM.currentEventIndex = index;
+    renderTimeline();
+    // Highlight stream line
+    document.querySelectorAll('#protocolStream .stream-line').forEach(l => {
+        l.style.background = '';
+        if (parseInt(l.dataset.eventIndex) === index) {
+            l.style.background = 'rgba(56,189,248,0.08)';
+            l.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        }
+    });
+    // Highlight X-Ray
+    inspectEventByIndex(index);
+}
+
+function playTimeline() {
+    if (SIM.isPlaying) return;
+    if (SIM.currentEventIndex >= SIM.timeline.length - 1) SIM.currentEventIndex = -1;
+    SIM.isPlaying = true;
+    document.getElementById('btnTlPlay').textContent = '⏸ Pause';
+    SIM.playTimer = setInterval(() => {
+        if (SIM.currentEventIndex >= SIM.timeline.length - 1) {
+            stopTimeline();
+            return;
+        }
+        gotoEvent(SIM.currentEventIndex + 1);
+    }, 700);
+}
+
+function stopTimeline() {
+    SIM.isPlaying = false;
+    clearInterval(SIM.playTimer);
+    document.getElementById('btnTlPlay').textContent = '▶ Play';
+}
+
+/* ============================================================
+   DIAGNOSIS ENGINE
+   ============================================================ */
+function renderDiagnosis(failureId, stage, protocol, errorText) {
+    const panel = document.getElementById('diagnosisPanel');
+    if (!panel) return;
+
+    const diagMap = {
+        dns_unavailable: {
+            where:'DNS Resolver', what:'MX record lookup failed.',
+            why:'The client could not resolve the mail server address.',
+            protocol:'DNS', port:53, layer:'Application / Network dependency',
+            cause:'DNS server unreachable or NXDOMAIN returned.',
+            fix:'Check DNS configuration and MX record resolution.'
+        },
+        smtp_offline: {
+            where:'SMTP Server', what:'Connection could not be established.',
+            why:'SMTP service is unavailable.',
+            protocol:'SMTP', port:587, layer:'Application Layer (SMTP)',
+            cause:'SMTP server is offline.',
+            fix:'Verify SMTP server availability and port configuration.'
+        },
+        smtp_port_blocked: {
+            where:'Firewall / Transport', what:'TCP SYN received no response.',
+            why:'Packets to port 587 are being dropped.',
+            protocol:'TCP', port:587, layer:'Transport Layer',
+            cause:'Firewall or ACL blocking outbound SMTP.',
+            fix:'Check firewall rules and port 587 reachability.'
+        },
+        starttls_failure: {
+            where:'SMTP Server', what:'STARTTLS command rejected.',
+            why:'Server cannot negotiate a TLS session.',
+            protocol:'SMTP', port:587, layer:'Application Layer (SMTP)',
+            cause:'TLS not configured or certificate invalid.',
+            fix:'Verify server TLS configuration and certificate chain.'
+        },
+        auth_failure: {
+            where:'SMTP AUTH', what:'Authentication credentials rejected.',
+            why:'The server returned 535 Authentication failed.',
+            protocol:'SMTP', port:587, layer:'Application Layer (SMTP)',
+            cause:'Incorrect username or password.',
+            fix:'Verify credentials and ensure TLS is enabled before AUTH.'
+        },
+        invalid_sender: {
+            where:'SMTP MAIL FROM', what:'Sender address rejected.',
+            why:'The server returned 550 for the envelope sender.',
+            protocol:'SMTP', port:587, layer:'Application Layer (SMTP)',
+            cause:'Sender not permitted to relay.',
+            fix:'Check sender address and relay permissions.'
+        },
+        invalid_recipient: {
+            where:'SMTP RCPT TO', what:'Recipient address rejected.',
+            why:'The server returned 550 User unknown.',
+            protocol:'SMTP', port:587, layer:'Application Layer (SMTP)',
+            cause:'Recipient mailbox does not exist.',
+            fix:'Verify recipient address and domain MX records.'
+        },
+        mailbox_full: {
+            where:'Recipient Mailbox', what:'Delivery refused.',
+            why:'The server returned 552 Mailbox full.',
+            protocol:'SMTP', port:587, layer:'Application Layer (SMTP)',
+            cause:'Recipient quota exceeded.',
+            fix:'Ask recipient to free space or increase quota.'
+        },
+        network_delay: {
+            where:'Network Path', what:'High latency observed.',
+            why:'Simulated 3000 ms delay between client and server.',
+            protocol:'TCP', port:587, layer:'Transport Layer',
+            cause:'Network congestion or routing detour.',
+            fix:'Check routing and network utilisation.'
+        },
+        pop3_auth_failure: {
+            where:'POP3 AUTH', what:'Authentication rejected.',
+            why:'POP3 server returned -ERR for PASS.',
+            protocol:'POP3', port:110, layer:'Application Layer (POP3)',
+            cause:'Incorrect POP3 credentials.',
+            fix:'Verify POP3 username/password and account status.'
+        },
+        imap_auth_failure: {
+            where:'IMAP LOGIN', what:'Authentication rejected.',
+            why:'IMAP server returned NO LOGIN failed.',
+            protocol:'IMAP', port:143, layer:'Application Layer (IMAP)',
+            cause:'Incorrect IMAP credentials.',
+            fix:'Verify IMAP credentials and account status.'
+        },
+        connection_timeout: {
+            where:'Transport', what:'Connection timed out.',
+            why:'No response from the server within the timeout window.',
+            protocol:'TCP', port:587, layer:'Transport Layer',
+            cause:'Server unreachable or packets silently dropped.',
+            fix:'Check server status, IP address and firewall.'
+        }
+    };
+
+    const d = diagMap[failureId] || {
+        where: stage || 'Unknown',
+        what: errorText || 'Simulated failure occurred.',
+        why: 'See event trace for details.',
+        protocol: protocol || '—',
+        port: '—',
+        layer: '—',
+        cause: '—',
+        fix: '—'
+    };
+
+    panel.innerHTML = `
+        <div class="diagnosis-panel">
+            <div class="diagnosis-banner">
+                <div class="diagnosis-banner-icon">✕</div>
+                <div class="diagnosis-banner-text">FAILURE DETECTED</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Where</div>
+                <div class="diag-value">${d.where}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">What happened</div>
+                <div class="diag-value">${d.what}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Why</div>
+                <div class="diag-value error">${d.why}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Affected Protocol</div>
+                <div class="diag-value">${d.protocol}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Affected Port</div>
+                <div class="diag-value">${d.port}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Affected Layer</div>
+                <div class="diag-value">${d.layer}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Possible Cause</div>
+                <div class="diag-value">${d.cause}</div>
+            </div>
+            <div class="diag-row">
+                <div class="diag-label">Suggested Fix</div>
+                <div class="diag-value fix">${d.fix}</div>
+            </div>
+        </div>
+    `;
+
+    // Also render in failure lab
+    const failPanel = document.getElementById('failureDiagnosis');
+    if (failPanel) failPanel.innerHTML = panel.innerHTML;
+}
+
+function clearDiagnosis() {
+    const panel = document.getElementById('diagnosisPanel');
+    if (panel) panel.innerHTML = `<div class="xray-empty">No failures detected. Run a simulation to begin analysis.</div>`;
+    const fp = document.getElementById('failureDiagnosis');
+    if (fp) fp.innerHTML = `<div class="xray-empty">Diagnosis will appear here after a failed simulation.</div>`;
+}
+
+/* ============================================================
+   CORE SIMULATION ENGINE
+   ============================================================ */
+function createEvent(opts) {
+    return {
+        index: SIM.events.length,
+        time: nowTime(),
+        protocol: opts.protocol || 'SMTP',
+        command: opts.command || '',
+        commandKey: opts.commandKey || opts.command || '',
+        response: opts.response || '',
+        text: opts.text || '',
+        sender: opts.sender || 'Client',
+        receiver: opts.receiver || 'Server',
+        port: opts.port || 0,
+        status: opts.status || 'success',
+        side: opts.side || 'server',   // client | server | system | error
+        node: opts.node || null,        // which topo node lights up
+        nodeState: opts.nodeState || 'processing',
+        conn: opts.conn || null,        // connection id
+        meaning: opts.meaning || '',
+        timelineLabel: opts.timelineLabel || opts.command || 'step'
+    };
+}
+
+function commitEvent(ev) {
+    SIM.events.push(ev);
+    SIM.timeline.push({ label: ev.timelineLabel, status: ev.status === 'failed' ? 'failed' : 'done' });
+    SIM.stats.eventsProcessed++;
+    SIM.stats.commands++;
+    if (ev.status === 'failed') SIM.stats.failedSteps++;
+    else SIM.stats.successSteps++;
+
+    addStreamEvent({
+        index: ev.index,
+        time: ev.time,
+        protocol: ev.protocol,
+        text: ev.text,
+        side: ev.side,
+        highlight: ev.status === 'failed'
+    });
+
+    if (ev.node) setNodeState(ev.node, ev.nodeState, ev.nodeState);
+    if (ev.conn) activateConnection(ev.conn, true);
+
+    // Update header
+    document.getElementById('headerEventCount').textContent = SIM.events.length;
+
+    return ev;
+}
+
+/* ---------- Build a complete SMTP simulation ---------- */
+function buildSmtpEvents(opts) {
+    // opts: sender, recipient, subject, message, failure (id or null)
+    const failure = opts.failure;
+    const events = [];
+    const domain = opts.recipient.split('@')[1] || 'example.com';
+    const mxHost = 'mail.' + domain;
+    const mxIP = '192.0.2.10';
+
+    const push = (e) => { events.push(e); };
+
+    // DNS
+    if (failure === 'dns_unavailable') {
+        push(createEvent({ protocol:'DNS', command:'DNS Query', commandKey:'DNS Query', response:'—', text:'C: DNS MX lookup for ' + domain, sender:'Client', receiver:'DNS Resolver', port:53, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-client-dns', timelineLabel:'DNS Query', meaning:'Client asks the DNS resolver for the MX record of the recipient domain.' }));
+        push(createEvent({ protocol:'ERROR', command:'DNS NXDOMAIN', commandKey:'DNS NXDOMAIN', response:'NXDOMAIN', text:'S: NXDOMAIN — ' + domain + ' could not be resolved', sender:'DNS Resolver', receiver:'Client', port:53, status:'failed', side:'error', node:'topo-dns', nodeState:'failed', conn:'conn-client-dns', timelineLabel:'DNS Failed', meaning:'The queried domain does not exist in the DNS namespace.' }));
+        return events;
+    }
+
+    push(createEvent({ protocol:'DNS', command:'DNS Query', commandKey:'DNS Query', response:'—', text:'C: DNS MX lookup for ' + domain, sender:'Client', receiver:'DNS Resolver', port:53, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-client-dns', timelineLabel:'DNS Query', meaning:'Client asks the DNS resolver for the MX record of the recipient domain.' }));
+    push(createEvent({ protocol:'DNS', command:'MX Response', commandKey:'MX Response', response:'MX ' + mxHost, text:'S: MX ' + mxHost + ' (priority 10)', sender:'DNS Resolver', receiver:'Client', port:53, status:'success', side:'server', node:'topo-dns', nodeState:'success', conn:'conn-client-dns', timelineLabel:'MX Record', meaning:'DNS resolver returns the MX record pointing to the mail server hostname.' }));
+    push(createEvent({ protocol:'DNS', command:'A Response', commandKey:'A Response', response:'A ' + mxIP, text:'S: A ' + mxIP + ' (mail server IPv4)', sender:'DNS Resolver', receiver:'Client', port:53, status:'success', side:'server', node:'topo-dns', nodeState:'success', conn:'conn-dns-smtp', timelineLabel:'A Record', meaning:'DNS resolver returns the IPv4 address of the mail server.' }));
+
+    // SMTP offline / port blocked / timeout
+    if (failure === 'smtp_offline') {
+        push(createEvent({ protocol:'TCP', command:'SYN', commandKey:'SYN', response:'—', text:'C: SYN → ' + mxHost + ':587', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-dns-smtp', timelineLabel:'TCP SYN', meaning:'Client initiates a TCP three-way handshake with the SMTP server.' }));
+        push(createEvent({ protocol:'ERROR', command:'Connection Refused', commandKey:'Connection Refused', response:'RST', text:'S: TCP RST — connection refused (no listener on port 587)', sender:'SMTP Server', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-smtp', nodeState:'failed', conn:'conn-dns-smtp', timelineLabel:'Refused', meaning:'No process is listening on the destination port.' }));
+        return events;
+    }
+    if (failure === 'smtp_port_blocked' || failure === 'connection_timeout') {
+        push(createEvent({ protocol:'TCP', command:'SYN', commandKey:'SYN', response:'—', text:'C: SYN → ' + mxHost + ':587', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-dns-smtp', timelineLabel:'TCP SYN', meaning:'Client initiates a TCP three-way handshake with the SMTP server.' }));
+        push(createEvent({ protocol:'ERROR', command:'Connection Timeout', commandKey:'Connection Timeout', response:'timeout', text:'S: no response within timeout window — connection timed out', sender:'SMTP Server', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-smtp', nodeState:'failed', conn:'conn-dns-smtp', timelineLabel:'Timeout', meaning:'No response from the server within the timeout window.' }));
+        return events;
+    }
+
+    // Normal TCP handshake
+    push(createEvent({ protocol:'TCP', command:'SYN', commandKey:'SYN', response:'—', text:'C: SYN → ' + mxHost + ':587', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-dns-smtp', timelineLabel:'TCP SYN', meaning:'Client initiates a TCP three-way handshake with the SMTP server.' }));
+    push(createEvent({ protocol:'TCP', command:'SYN-ACK', commandKey:'SYN-ACK', response:'SYN-ACK', text:'S: SYN-ACK', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'processing', conn:'conn-dns-smtp', timelineLabel:'TCP SYN-ACK', meaning:'Server acknowledges the SYN and sends its own sequence number.' }));
+    push(createEvent({ protocol:'TCP', command:'ACK', commandKey:'ACK', response:'—', text:'C: ACK — TCP connection established', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'success', conn:'conn-dns-smtp', timelineLabel:'TCP ACK', meaning:'Client acknowledges the server SYN; connection established.' }));
+
+    // SMTP greeting
+    push(createEvent({ protocol:'SMTP', command:'220 Greeting', commandKey:'220 Greeting', response:'220 mail.' + domain + ' SMTP Ready', text:'S: 220 ' + mxHost + ' SMTP Ready', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'220 Greeting', meaning:'Server announces readiness for an SMTP conversation.' }));
+    push(createEvent({ protocol:'SMTP', command:'EHLO', commandKey:'EHLO', response:'—', text:'C: EHLO client.local', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-smtp-relay', timelineLabel:'EHLO', meaning:'Client introduces itself and requests the list of supported extensions.' }));
+    push(createEvent({ protocol:'SMTP', command:'250 EHLO OK', commandKey:'250 EHLO OK', response:'250 mail.example.com', text:'S: 250-' + mxHost + ' — STARTTLS, AUTH LOGIN supported', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'250 EHLO', meaning:'Server accepts EHLO and lists capabilities such as STARTTLS and AUTH.' }));
+
+    // STARTTLS
+    push(createEvent({ protocol:'SMTP', command:'STARTTLS', commandKey:'STARTTLS', response:'—', text:'C: STARTTLS', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-smtp-relay', timelineLabel:'STARTTLS', meaning:'Client requests an upgrade of the plaintext channel to TLS.' }));
+
+    if (failure === 'starttls_failure') {
+        push(createEvent({ protocol:'ERROR', command:'454 TLS Unavailable', commandKey:'454 TLS Unavailable', response:'454 TLS not available', text:'S: 454 TLS not available — session aborted', sender:'SMTP Server', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-smtp', nodeState:'failed', conn:'conn-smtp-relay', timelineLabel:'TLS Failed', meaning:'The server does not support or cannot start TLS.' }));
+        return events;
+    }
+
+    push(createEvent({ protocol:'SMTP', command:'220 TLS Ready', commandKey:'220 TLS Ready', response:'220 Ready to start TLS', text:'S: 220 Ready to start TLS', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'220 TLS', meaning:'Server accepts STARTTLS; a TLS handshake now begins.' }));
+
+    // AUTH
+    push(createEvent({ protocol:'SMTP', command:'AUTH LOGIN', commandKey:'AUTH LOGIN', response:'—', text:'C: AUTH LOGIN (base64 credentials — simulated)', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-smtp-relay', timelineLabel:'AUTH LOGIN', meaning:'Client begins SASL LOGIN authentication using base64-encoded credentials.' }));
+
+    if (failure === 'auth_failure') {
+        push(createEvent({ protocol:'ERROR', command:'535 Auth Failed', commandKey:'535 Auth Failed', response:'535 Authentication failed', text:'S: 535 Authentication failed — credentials rejected', sender:'SMTP Server', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-smtp', nodeState:'failed', conn:'conn-smtp-relay', timelineLabel:'Auth Failed', meaning:'The server rejected the supplied authentication credentials.' }));
+        return events;
+    }
+
+    push(createEvent({ protocol:'SMTP', command:'235 Auth OK', commandKey:'235 Auth OK', response:'235 Authentication successful', text:'S: 235 Authentication successful', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'235 Auth OK', meaning:'Server accepts credentials; the session is now authenticated.' }));
+
+    // MAIL FROM
+    push(createEvent({ protocol:'SMTP', command:'MAIL FROM', commandKey:'MAIL FROM', response:'—', text:'C: MAIL FROM:<' + opts.sender + '>', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-smtp-relay', timelineLabel:'MAIL FROM', meaning:'Client specifies the envelope sender of the message.' }));
+
+    if (failure === 'invalid_sender') {
+        push(createEvent({ protocol:'ERROR', command:'550 Sender Fail', commandKey:'550 Sender Fail', response:'550 Sender rejected', text:'S: 550 Sender rejected — relay denied', sender:'SMTP Server', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-smtp', nodeState:'failed', conn:'conn-smtp-relay', timelineLabel:'550 Sender', meaning:'The server rejected the envelope sender address.' }));
+        return events;
+    }
+
+    push(createEvent({ protocol:'SMTP', command:'250 MAIL OK', commandKey:'250 MAIL OK', response:'250 OK', text:'S: 250 OK', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'250 MAIL', meaning:'Server accepts the sender address.' }));
+
+    // RCPT TO
+    push(createEvent({ protocol:'SMTP', command:'RCPT TO', commandKey:'RCPT TO', response:'—', text:'C: RCPT TO:<' + opts.recipient + '>', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-smtp-relay', timelineLabel:'RCPT TO', meaning:'Client specifies one recipient for the message.' }));
+
+    if (failure === 'invalid_recipient') {
+        push(createEvent({ protocol:'ERROR', command:'550 RCPT Fail', commandKey:'550 RCPT Fail', response:'550 User unknown', text:'S: 550 User unknown — RCPT TO rejected', sender:'SMTP Server', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-smtp', nodeState:'failed', conn:'conn-smtp-relay', timelineLabel:'550 RCPT', meaning:'Server rejects the recipient address (e.g. user unknown).' }));
+        return events;
+    }
+
+    push(createEvent({ protocol:'SMTP', command:'250 RCPT OK', commandKey:'250 RCPT OK', response:'250 OK', text:'S: 250 OK', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'250 RCPT', meaning:'Server accepts the recipient address.' }));
+
+    // DATA
+    push(createEvent({ protocol:'SMTP', command:'DATA', commandKey:'DATA', response:'—', text:'C: DATA', sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-smtp-relay', timelineLabel:'DATA', meaning:'Client signals it is about to transmit the message content.' }));
+    push(createEvent({ protocol:'SMTP', command:'354 Data Go', commandKey:'354 Data Go', response:'354 Start mail input', text:'S: 354 Start mail input; end with <CRLF>.<CRLF>', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-smtp', nodeState:'success', conn:'conn-smtp-relay', timelineLabel:'354 Data', meaning:'Server tells the client to start sending the message body.' }));
+    push(createEvent({ protocol:'SMTP', command:'MESSAGE DATA', commandKey:'DATA', response:'—', text:'C: Subject: ' + opts.subject + ' | Body: ' + opts.message, sender:'Client', receiver:'SMTP Server', port:587, status:'success', side:'client', node:'topo-client', nodeState:'processing', conn:'conn-relay-mailbox', timelineLabel:'Body', meaning:'Message body is transmitted to the server.' }));
+
+    if (failure === 'mailbox_full') {
+        push(createEvent({ protocol:'ERROR', command:'552 Mailbox Full', commandKey:'552 Mailbox Full', response:'552 Mailbox full', text:'S: 552 Mailbox full — message rejected', sender:'Mail Relay', receiver:'Client', port:587, status:'failed', side:'error', node:'topo-mailbox', nodeState:'failed', conn:'conn-relay-mailbox', timelineLabel:'552 Full', meaning:'Recipient mailbox has exceeded its quota; delivery is refused.' }));
+        return events;
+    }
+
+    push(createEvent({ protocol:'SMTP', command:'250 Accepted', commandKey:'250 Accepted', response:'250 Message accepted', text:'S: 250 Message accepted for delivery', sender:'SMTP Server', receiver:'Client', port:587, status:'success', side:'server', node:'topo-relay', nodeState:'success', conn:'conn-relay-mailbox', timelineLabel:'250 Accepted', meaning:'Server accepted the message and queued it for delivery.' }));
+    push(createEvent({ protocol:'SMTP', command:'DELIVERED', commandKey:'250 Accepted', response:'stored', text:'→ Message stored in recipient mailbox', sender:'Mail Relay', receiver:'Mailbox', port:0, status:'success', side:'system', node:'topo-mailbox', nodeState:'success', conn:'conn-relay-mailbox', timelineLabel:'Delivered', meaning:'Message has been written to the recipient mailbox.' }));
+
+    return events;
+}
+
+/* ---------- Play a simulation with progressive animation ---------- */
+function playSimulation(events, opts = {}) {
+    // Reset state
+    SIM.events = [];
+    SIM.timeline = [];
+    SIM.currentEventIndex = -1;
+    SIM.stats = { startTime: Date.now(), endTime:0, commands:0, successSteps:0, failedSteps:0, latencyMs: opts.latencyMs || 0, eventsProcessed:0 };
+    SIM.status = 'running';
+    SIM.protocol = opts.protocol || 'SMTP';
+    SIM.simId = nextSimId();
+    document.getElementById('headerSimId').textContent = SIM.simId;
+    document.getElementById('headerEventCount').textContent = '0';
+    setHeaderStatus('running');
+    resetTopology();
+    clearStream();
+    clearDiagnosis();
+    renderStats();
+
+    const baseDelay = opts.latencyMs ? 900 : 320;
+    let cumulative = 0;
+
+    events.forEach((ev, i) => {
+        const delay = i === 0 ? 0 : baseDelay;
+        cumulative += delay;
+        setTimeout(() => {
+            const e = { ...ev, index: i };
+            commitEvent(e);
+            renderStats();
+        }, cumulative);
+    });
+
+    // Finalise
+    setTimeout(() => {
+        SIM.stats.endTime = Date.now();
+        const failed = events.some(e => e.status === 'failed');
+        SIM.status = failed ? 'failed' : 'success';
+        setHeaderStatus(SIM.status);
+        renderStats();
+        renderTimeline();
+        renderXrayList();
+
+        if (failed) {
+            const lastFailed = [...events].reverse().find(e => e.status === 'failed');
+            const failureId = opts.failure || 'unknown';
+            renderDiagnosis(failureId, lastFailed.timelineLabel, lastFailed.protocol, lastFailed.response);
+            toast('Simulation failed at ' + lastFailed.timelineLabel, 'failed');
+        } else {
+            toast('Simulation completed successfully', 'success');
+        }
+
+        addHistoryEntry(SIM.simId, SIM.protocol, opts.scenario || 'SMTP Transaction', failed ? 'FAILED' : 'SUCCESS', ((SIM.stats.endTime - SIM.stats.startTime)/1000).toFixed(1) + 's');
+
+        // Auto-select first event in X-Ray
+        if (SIM.events.length) inspectEventByIndex(0);
+
+        // If experiments mode, report result
+        if (opts.experimentId) reportExperimentResult(opts.experimentId, !failed);
+    }, cumulative + 200);
+
+    // Render an initial empty timeline
+    renderTimeline();
+}
+
+/* ============================================================
+   HISTORY
+   ============================================================ */
+function addHistoryEntry(simId, protocol, scenario, result, duration) {
+    const entry = {
+        id: simId,
+        timestamp: new Date().toLocaleString('en-GB', { day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' }),
+        protocol, scenario, result, duration
+    };
+    SIM.history.unshift(entry);
+    renderHistory();
+}
+
+function renderHistory() {
+    const tbody = document.getElementById('historyBody');
+    if (!tbody) return;
+    if (!SIM.history.length) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; color:var(--text-muted); padding:1.5rem;">No simulations recorded yet.</td></tr>`;
+        return;
+    }
+    tbody.innerHTML = SIM.history.map(h => `
+        <tr>
+            <td class="sim-id">${h.id}</td>
+            <td>${h.timestamp}</td>
+            <td>${h.protocol}</td>
+            <td>${h.scenario}</td>
+            <td><span class="badge ${h.result === 'SUCCESS' ? 'success' : 'failed'}">${h.result}</span></td>
+            <td>${h.duration || '—'}</td>
+            <td><button class="btn btn-sm" onclick="replayHistory('${h.id}')">Replay</button></td>
+        </tr>
+    `).join('');
+}
+
+function replayHistory(simId) {
+    toast('Replaying ' + simId + ' — re-running last scenario', 'info');
+    // Re-run the same scenario by looking up history — simplest: re-run normal SMTP
+    const cfg = {
+        sender: document.getElementById('cfgSender')?.value || 'student@example.com',
+        recipient: document.getElementById('cfgRecipient')?.value || 'receiver@example.com',
+        subject: document.getElementById('cfgSubject')?.value || 'Network Lab Test',
+        message: document.getElementById('cfgMessage')?.value || 'Hello from MailFlow X.'
+    };
+    const events = buildSmtpEvents({ ...cfg, failure: null });
+    playSimulation(events, { protocol:'SMTP', scenario:'Replay ' + simId });
+    navigateTo('dashboard');
+}
+
+/* ============================================================
+   DNS VISUALIZATION
+   ============================================================ */
+function runDnsVisualization() {
+    const steps = document.querySelectorAll('#dnsFlow .dns-step');
+    steps.forEach(s => s.classList.remove('active','done','failed'));
+    const seq = ['query','mx','ip','connect'];
+    seq.forEach((id, i) => {
+        setTimeout(() => {
+            steps.forEach(s => s.classList.remove('active'));
+            const el = document.querySelector(`#dnsFlow [data-step="${id}"]`);
+            if (el) el.classList.add('active');
+            if (i > 0) {
+                const prev = document.querySelector(`#dnsFlow [data-step="${seq[i-1]}"]`);
+                if (prev) { prev.classList.remove('active'); prev.classList.add('done'); }
+            }
+        }, i * 600);
+    });
+    setTimeout(() => {
+        steps.forEach(s => { s.classList.remove('active'); s.classList.add('done'); });
+        toast('DNS / MX lookup resolved', 'success');
+    }, seq.length * 600 + 200);
+}
+
+/* ============================================================
+   FAILURE LAB
+   ============================================================ */
+function buildFailureGrid() {
+    const grid = document.getElementById('failureGrid');
+    if (!grid) return;
+    grid.innerHTML = FAILURES.map(f => `
+        <div class="failure-card" data-failure="${f.id}">
+            <div class="failure-card-head">
+                <div class="failure-radio"></div>
+                <div class="failure-title">${f.label}</div>
+            </div>
+            <div class="failure-desc">${f.desc}</div>
+            <div class="failure-effect">→ ${f.effect}</div>
+        </div>
+    `).join('');
+
+    grid.querySelectorAll('.failure-card').forEach(card => {
+        card.addEventListener('click', () => {
+            grid.querySelectorAll('.failure-card').forEach(c => c.classList.remove('selected'));
+            card.classList.add('selected');
+            SIM.selectedFailure = card.dataset.failure;
+        });
+    });
+}
+
+function runFailureSimulation() {
+    if (!SIM.selectedFailure) {
+        toast('Select a failure scenario first', 'warning');
+        return;
+    }
+    const failureId = SIM.selectedFailure;
+    const f = FAILURES.find(x => x.id === failureId);
+    const cfg = {
+        sender: document.getElementById('cfgSender')?.value || 'student@example.com',
+        recipient: document.getElementById('cfgRecipient')?.value || 'receiver@example.com',
+        subject: document.getElementById('cfgSubject')?.value || 'Network Lab Test',
+        message: document.getElementById('cfgMessage')?.value || 'Hello from MailFlow X.'
+    };
+    const opts = {
+        protocol: 'SMTP',
+        scenario: f.label,
+        failure: failureId,
+        latencyMs: failureId === 'network_delay' ? 3000 : 0
+    };
+
+    // Also render into failure stream (mirror)
+    const events = buildSmtpEvents({ ...cfg, failure: failureId });
+    playSimulation(events, opts);
+    mirrorToFailureStream(events);
+
+    navigateTo('dashboard');
+    toast('Failure simulation started: ' + f.label, 'warning');
+}
+
+function mirrorToFailureStream(events) {
+    const stream = document.getElementById('failureStream');
+    if (!stream) return;
+    stream.innerHTML = '';
+    let cumulative = 0;
+    events.forEach((ev, i) => {
+        const delay = i === 0 ? 0 : (SIM.stats.latencyMs ? 900 : 320);
+        cumulative += delay;
+        setTimeout(() => {
+            const line = document.createElement('div');
+            line.className = 'stream-line ' + (ev.side || 'system');
+            const protoClass = {
+                smtp:'proto-smtp', pop3:'proto-pop3', imap:'proto-imap',
+                dns:'proto-dns', tcp:'proto-tcp', error:'proto-err'
+            }[(ev.protocol||'').toLowerCase()] || 'proto-smtp';
+            line.innerHTML = `
+                <span class="stream-time">${nowTime()}</span>
+                <span class="stream-proto ${protoClass}">${(ev.protocol||'—').toUpperCase()}</span>
+                <span class="stream-content">${ev.text}</span>
+            `;
+            stream.appendChild(line);
+            stream.scrollTop = stream.scrollHeight;
+        }, cumulative);
+    });
+}
+
+/* ============================================================
+   POP3 / IMAP COMPARISON
+   ============================================================ */
+function buildCmdLists() {
+    const pop3Cmds = [
+        { name:'USER',     desc:'Send username' },
+        { name:'PASS',     desc:'Send password' },
+        { name:'STAT',     desc:'Mailbox status' },
+        { name:'LIST',     desc:'List messages' },
+        { name:'RETR',     desc:'Retrieve message' },
+        { name:'DELE',     desc:'Mark for deletion' },
+        { name:'QUIT',     desc:'End session' }
+    ];
+    const imapCmds = [
+        { name:'LOGIN',       desc:'Authenticate' },
+        { name:'SELECT INBOX',desc:'Open mailbox' },
+        { name:'FETCH',       desc:'Get message data' },
+        { name:'STORE',       desc:'Update flags' },
+        { name:'EXPUNGE',     desc:'Permanently delete' },
+        { name:'LOGOUT',      desc:'End session' }
+    ];
+
+    const pop3El = document.getElementById('pop3CmdList');
+    if (pop3El) {
+        pop3El.innerHTML = pop3Cmds.map(c => `
+            <div class="cmd-mini" data-cmd="${c.name}">
+                <span class="cmd-mini-name">${c.name}</span>
+                <span class="cmd-mini-desc">${c.desc}</span>
+            </div>
+        `).join('');
+        pop3El.querySelectorAll('.cmd-mini').forEach(el => {
+            el.addEventListener('click', () => {
+                el.classList.toggle('active');
+                const cmd = el.dataset.cmd;
+                const meaning = PROTOCOL_MEANINGS[cmd] || { meaning: 'POP3 command: ' + cmd };
+                document.getElementById('compareOutput').innerHTML = `
+                    <div class="xray-header">
+                        <span class="xray-badge" style="background:rgba(168,85,247,0.15);color:#C084FC;border-color:rgba(168,85,247,0.3);">POP3</span>
+                        <span class="xray-command">${cmd}</span>
+                    </div>
+                    <div class="xray-grid">
+                        <div class="xray-item"><span class="xray-label">Purpose</span><span class="xray-value">${meaning.meaning || 'POP3 command'}</span></div>
+                        <div class="xray-item"><span class="xray-label">Port</span><span class="xray-value">110</span></div>
+                        <div class="xray-item"><span class="xray-label">Transport</span><span class="xray-value">TCP</span></div>
+                        <div class="xray-item"><span class="xray-label">Layer</span><span class="xray-value">Application</span></div>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    const imapEl = document.getElementById('imapCmdList');
+    if (imapEl) {
+        imapEl.innerHTML = imapCmds.map(c => `
+            <div class="cmd-mini" data-cmd="${c.name}">
+                <span class="cmd-mini-name">${c.name}</span>
+                <span class="cmd-mini-desc">${c.desc}</span>
+            </div>
+        `).join('');
+        imapEl.querySelectorAll('.cmd-mini').forEach(el => {
+            el.addEventListener('click', () => {
+                el.classList.toggle('active');
+                const cmd = el.dataset.cmd;
+                const meaning = PROTOCOL_MEANINGS[cmd] || { meaning: 'IMAP command: ' + cmd };
+                document.getElementById('compareOutput').innerHTML = `
+                    <div class="xray-header">
+                        <span class="xray-badge" style="background:rgba(245,158,11,0.15);color:#FBBF24;border-color:rgba(245,158,11,0.3);">IMAP</span>
+                        <span class="xray-command">${cmd}</span>
+                    </div>
+                    <div class="xray-grid">
+                        <div class="xray-item"><span class="xray-label">Purpose</span><span class="xray-value">${meaning.meaning || 'IMAP command'}</span></div>
+                        <div class="xray-item"><span class="xray-label">Port</span><span class="xray-value">143</span></div>
+                        <div class="xray-item"><span class="xray-label">Transport</span><span class="xray-value">TCP</span></div>
+                        <div class="xray-item"><span class="xray-label">Layer</span><span class="xray-value">Application</span></div>
+                    </div>
+                `;
+            });
+        });
+    }
+}
+
+function runComparison() {
+    const out = document.getElementById('compareOutput');
+    out.innerHTML = `<div class="stream-line system"><span class="stream-time">${nowTime()}</span><span class="stream-content">Running POP3 and IMAP sessions in parallel…</span></div>`;
+
+    // POP3
+    const pop3NodeServer = document.getElementById('pop3NodeServer');
+    const pop3NodeTransfer = document.getElementById('pop3NodeTransfer');
+    const pop3NodeClient = document.getElementById('pop3NodeClient');
+    const pop3Steps = ['USER','PASS','STAT','LIST','RETR','DELE','QUIT'];
+
+    // IMAP
+    const imapNodeServer = document.getElementById('imapNodeServer');
+    const imapNodeTransfer = document.getElementById('imapNodeTransfer');
+    const imapNodeClient = document.getElementById('imapNodeClient');
+    const imapSteps = ['LOGIN','SELECT INBOX','FETCH','STORE','EXPUNGE','LOGOUT'];
+
+    // Animate POP3
+    pop3Steps.forEach((cmd, i) => {
+        setTimeout(() => {
+            [pop3NodeServer, pop3NodeTransfer, pop3NodeClient].forEach(n => n.classList.remove('active'));
+            if (i === 0) pop3NodeServer.classList.add('active');
+            else if (i === pop3Steps.length - 1) pop3NodeClient.classList.add('active');
+            else pop3NodeTransfer.classList.add('active');
+        }, i * 450);
+    });
+
+    // Animate IMAP
+    imapSteps.forEach((cmd, i) => {
+        setTimeout(() => {
+            [imapNodeServer, imapNodeTransfer, imapNodeClient].forEach(n => n.classList.remove('active'));
+            if (i === 0) imapNodeServer.classList.add('active');
+            else if (i === imapSteps.length - 1) imapNodeClient.classList.add('active');
+            else imapNodeTransfer.classList.add('active');
+        }, i * 450);
+    });
+
+    setTimeout(() => {
+        [pop3NodeServer, pop3NodeTransfer, pop3NodeClient,
+         imapNodeServer, imapNodeTransfer, imapNodeClient].forEach(n => n.classList.remove('active'));
+        out.innerHTML = `
+            <div class="grid-2" style="gap:0.8rem;">
+                <div>
+                    <div class="xray-header">
+                        <span class="xray-badge" style="background:rgba(168,85,247,0.15);color:#C084FC;border-color:rgba(168,85,247,0.3);">POP3 RESULT</span>
+                    </div>
+                    <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.6;">
+                        • Message downloaded to DEVICE A<br>
+                        • Local copy stored, server copy marked for deletion<br>
+                        • No synchronization with other clients<br>
+                        • Read state is local only
+                    </div>
+                </div>
+                <div>
+                    <div class="xray-header">
+                        <span class="xray-badge" style="background:rgba(245,158,11,0.15);color:#FBBF24;border-color:rgba(245,158,11,0.3);">IMAP RESULT</span>
+                    </div>
+                    <div style="font-size:0.72rem; color:var(--text-secondary); line-height:1.6;">
+                        • Message remains on MAIL SERVER<br>
+                        • Flags (read/unread) synchronised<br>
+                        • DEVICE B sees same mailbox state<br>
+                        • Folder hierarchy preserved
+                    </div>
+                </div>
+            </div>
+        `;
+        toast('POP3 and IMAP comparison complete', 'success');
+    }, 3500);
+}
+
+/* ============================================================
+   EXPERIMENTS
+   ============================================================ */
+const EXPERIMENTS = [
+    { id:'exp1', title:'Trace a successful SMTP transaction', objective:'Observe EHLO → AUTH → MAIL FROM → RCPT TO → DATA.', failure:null, protocol:'SMTP' },
+    { id:'exp2', title:'Why can\'t the email reach the recipient?', objective:'Diagnose invalid recipient rejection.', failure:'invalid_recipient', protocol:'SMTP' },
+    { id:'exp3', title:'Compare POP3 and IMAP', objective:'Observe download vs synchronisation behaviour.', special:'compare', protocol:'POP3/IMAP' },
+    { id:'exp4', title:'Identify the protocol responsible for authentication', objective:'Locate AUTH LOGIN in the trace.', failure:null, protocol:'SMTP' },
+    { id:'exp5', title:'Diagnose a DNS failure', objective:'Observe NXDOMAIN and identify DNS layer.', failure:'dns_unavailable', protocol:'DNS' },
+    { id:'exp6', title:'Diagnose SMTP authentication failure', objective:'Observe 535 and identify root cause.', failure:'auth_failure', protocol:'SMTP' }
+];
+
+function buildExperiments() {
+    const el = document.getElementById('experimentList');
+    if (!el) return;
+    el.innerHTML = EXPERIMENTS.map(e => `
+        <div class="exp-card" data-exp="${e.id}">
+            <div class="exp-info">
+                <div class="exp-title">${e.title}</div>
+                <div class="exp-obj">${e.objective}</div>
+            </div>
+            <div class="exp-actions">
+                <span class="badge ${SIM.experiments.includes(e.id) ? 'success' : ''}" data-badge>${SIM.experiments.includes(e.id) ? 'Completed' : 'Not started'}</span>
+                <button class="btn btn-sm btn-primary" onclick="runExperiment('${e.id}')">▶ Run</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+function runExperiment(expId) {
+    const exp = EXPERIMENTS.find(e => e.id === expId);
+    if (!exp) return;
+
+    const cfg = {
+        sender: document.getElementById('cfgSender')?.value || 'student@example.com',
+        recipient: document.getElementById('cfgRecipient')?.value || 'receiver@example.com',
+        subject: document.getElementById('cfgSubject')?.value || 'Network Lab Test',
+        message: document.getElementById('cfgMessage')?.value || 'Hello from MailFlow X.'
+    };
+
+    if (exp.special === 'compare') {
+        navigateTo('pop3imap');
+        setTimeout(runComparison, 400);
+        SIM.experiments.push(expId);
+        SIM.score += 10;
+        updateScore();
+        buildExperiments();
+        return;
+    }
+
+    const events = buildSmtpEvents({ ...cfg, failure: exp.failure });
+    playSimulation(events, {
+        protocol: exp.protocol,
+        scenario: exp.title,
+        failure: exp.failure,
+        experimentId: exp.id
+    });
+
+    navigateTo('dashboard');
+}
+
+function reportExperimentResult(expId, success) {
+    const exp = EXPERIMENTS.find(e => e.id === expId);
+    if (!exp) return;
+    if (!SIM.experiments.includes(expId)) {
+        SIM.experiments.push(expId);
+        SIM.score += 10;
+        updateScore();
+        buildExperiments();
+    }
+
+    const el = document.getElementById('experimentResult');
+    if (!el) return;
+
+    let observed = success ? 'Transaction completed without errors.' : 'Transaction halted at failure stage.';
+    let diagnosis = success ? 'All SMTP commands accepted.' : 'See diagnosis panel for failure details.';
+    let proto = exp.protocol;
+
+    el.innerHTML = `
+        <div class="xray-panel">
+            <div class="xray-grid">
+                <div class="xray-item"><span class="xray-label">Experiment</span><span class="xray-value">${exp.title}</span></div>
+                <div class="xray-item"><span class="xray-label">Protocol</span><span class="xray-value">${proto}</span></div>
+                <div class="xray-item full"><span class="xray-label">Observed behaviour</span><span class="xray-value">${observed}</span></div>
+                <div class="xray-item full"><span class="xray-label">Diagnosis</span><span class="xray-value ${success?'success':'failed'}">${diagnosis}</span></div>
+                <div class="xray-item full"><span class="xray-label">Explanation</span><span class="xray-value">${exp.objective}</span></div>
+            </div>
+        </div>
+    `;
+}
+
+function updateScore() {
+    const el = document.getElementById('expScore');
+    if (el) el.textContent = SIM.score + ' / ' + (EXPERIMENTS.length * 10) + ' pts';
+}
+
+/* ============================================================
+   BEHIND THE PACKET
+   ============================================================ */
+function showBehindThePacket() {
+    const modal = document.createElement('div');
+    modal.style.cssText = `
+        position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999;
+        display:flex; align-items:center; justify-content:center; padding:1rem;
+        backdrop-filter:blur(4px);
+    `;
+    modal.innerHTML = `
+        <div style="background:var(--bg-card); border:1px solid var(--border-active); border-radius:14px; max-width:640px; width:100%; max-height:90vh; overflow-y:auto; padding:1.5rem; position:relative;">
+            <div class="flex-between mb-sm">
+                <div>
+                    <div style="font-size:1rem; font-weight:700; color:var(--text-primary);">Behind the Packet</div>
+                    <div style="font-size:0.72rem; color:var(--text-muted);">How one SMTP command travels through the network stack</div>
+                </div>
+                <button class="btn btn-sm" id="closeBehind">✕ Close</button>
+            </div>
+            <div class="layer-stack" id="layerStack">
+                <div class="layer-item app active" data-layer="app">
+                    <div>
+                        <div class="layer-name">Application</div>
+                        <div class="layer-proto">SMTP / POP3 / IMAP</div>
+                    </div>
+                    <div class="layer-desc">The user-facing protocol. SMTP commands such as <span class="mono">EHLO</span>, <span class="mono">MAIL FROM</span> and <span class="mono">RCPT TO</span> are formed here. The application layer defines the syntax, semantics and sequencing of the email conversation.</div>
+                </div>
+                <div class="layer-down-arrow">↓</div>
+                <div class="layer-item trans" data-layer="trans">
+                    <div>
+                        <div class="layer-name">Transport</div>
+                        <div class="layer-proto">TCP</div>
+                    </div>
+                    <div class="layer-desc">TCP provides a reliable, ordered byte stream between client and server. The three-way handshake (SYN, SYN-ACK, ACK) establishes the connection. SMTP normally uses port 587 (submission) or port 25 (relay).</div>
+                </div>
+                <div class="layer-down-arrow">↓</div>
+                <div class="layer-item net" data-layer="net">
+                    <div>
+                        <div class="layer-name">Network</div>
+                        <div class="layer-proto">IP</div>
+                    </div>
+                    <div class="layer-desc">IP is responsible for addressing and routing. Each TCP segment is encapsulated in an IP packet with source and destination IP addresses obtained from the DNS/MX resolution step.</div>
+                </div>
+                <div class="layer-down-arrow">↓</div>
+                <div class="layer-item link" data-layer="link">
+                    <div>
+                        <div class="layer-name">Data Link</div>
+                        <div class="layer-proto">Ethernet / Wi-Fi</div>
+                    </div>
+                    <div class="layer-desc">The link layer moves frames between adjacent nodes. MAC addresses are used for local delivery; ARP resolves IP to MAC on Ethernet. Wi-Fi uses 802.11 frames with similar responsibilities.</div>
+                </div>
+            </div>
+            <div style="margin-top:1rem; font-size:0.7rem; color:var(--text-muted); line-height:1.5;">
+                Encapsulation: each layer adds its own header. On the receiving side, the headers are stripped in reverse order.
+                This is why a single SMTP command like <span class="mono">MAIL FROM</span> ultimately becomes an Ethernet frame carrying an IP packet carrying a TCP segment carrying the SMTP text.
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+
+    // Animate layers
+    const layers = modal.querySelectorAll('.layer-item');
+    let i = 0;
+    const timer = setInterval(() => {
+        layers.forEach(l => l.classList.remove('active'));
+        if (i < layers.length) {
+            layers[i].classList.add('active');
+            i++;
+        } else {
+            clearInterval(timer);
+            i = 0;
+            setTimeout(() => {
+                const t2 = setInterval(() => {
+                    layers.forEach(l => l.classList.remove('active'));
+                    if (i < layers.length) { layers[i].classList.add('active'); i++; }
+                    else { clearInterval(t2); }
+                }, 400);
+            }, 200);
+        }
+    }, 500);
+
+    modal.querySelector('#closeBehind').addEventListener('click', () => modal.remove());
+    modal.addEventListener('click', (e) => { if (e.target === modal) modal.remove(); });
+}
+
+/* ============================================================
+   NAVIGATION
+   ============================================================ */
+function navigateTo(pageId) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    const target = document.getElementById('page-' + pageId);
+    if (target) target.classList.add('active-page');
+    document.querySelectorAll('.nav-link').forEach(l => {
+        l.classList.toggle('active', l.dataset.page === pageId);
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+/* ============================================================
+   EVENT BINDINGS
+   ============================================================ */
+document.addEventListener('DOMContentLoaded', () => {
+    // Build dynamic components
+    buildTopology();
+    buildFailureGrid();
+    buildCmdLists();
+    buildExperiments();
+    renderStats();
+    renderHistory();
+    resetTopology();
+
+    // Nav
+    document.querySelectorAll('.nav-link').forEach(l => {
+        l.addEventListener('click', () => navigateTo(l.dataset.page));
+    });
+
+    // Stream filters
+    document.querySelectorAll('#streamFilters .chip').forEach(chip => {
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('#streamFilters .chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            SIM.activeStreamFilter = chip.dataset.filter;
+            applyStreamFilter();
+        });
+    });
+
+    document.getElementById('streamClearBtn')?.addEventListener('click', clearStream);
+
+    // Dashboard run
+    document.getElementById('btnRunSim')?.addEventListener('click', () => {
+        const cfg = {
+            sender: document.getElementById('cfgSender').value,
+            recipient: document.getElementById('cfgRecipient').value,
+            subject: document.getElementById('cfgSubject').value,
+            message: document.getElementById('cfgMessage').value
+        };
+        const failure = SIM.selectedFailure;
+        const events = buildSmtpEvents({ ...cfg, failure });
+        playSimulation(events, {
+            protocol: 'SMTP',
+            scenario: failure ? (FAILURES.find(f=>f.id===failure)?.label || 'Failure') : 'SMTP Transaction',
+            failure
+        });
+    });
+
+    // SMTP lab
+    document.getElementById('btnSmtpLabRun')?.addEventListener('click', () => {
+        const cfg = {
+            sender: document.getElementById('smtpLabSender').value,
+            recipient: document.getElementById('smtpLabRecipient').value,
+            subject: document.getElementById('smtpLabSubject').value,
+            message: document.getElementById('smtpLabMessage').value
+        };
+        const events = buildSmtpEvents({ ...cfg, failure: null });
+        playSimulation(events, { protocol: 'SMTP', scenario: 'SMTP Lab Transaction' });
+        navigateTo('dashboard');
+    });
+
+    document.getElementById('btnSmtpLabWithFailure')?.addEventListener('click', () => {
+        if (!SIM.selectedFailure) {
+            toast('Select a failure in the Failure Lab first', 'warning');
+            navigateTo('failure');
+            return;
+        }
+        runFailureSimulation();
+    });
+
+    // Failure lab
+    document.getElementById('btnFailureRun')?.addEventListener('click', runFailureSimulation);
+    document.getElementById('btnFailureClear')?.addEventListener('click', () => {
+        SIM.selectedFailure = null;
+        document.querySelectorAll('.failure-card').forEach(c => c.classList.remove('selected'));
+        document.getElementById('failureStream').innerHTML = `<div class="stream-line system"><span class="stream-time">--:--:--</span><span class="stream-content">Select a failure scenario and run the simulation.</span></div>`;
+        clearDiagnosis();
+        resetTopology();
+    });
+
+    // DNS
+    document.getElementById('btnDnsRun')?.addEventListener('click', runDnsVisualization);
+
+    // Comparison
+    document.getElementById('btnCompareRun')?.addEventListener('click', runComparison);
+
+    // Behind the packet
+    document.getElementById('btnBehindPacket')?.addEventListener('click', showBehindThePacket);
+
+    // Timeline controls
+    document.getElementById('btnTlFirst')?.addEventListener('click', () => { stopTimeline(); gotoEvent(0); });
+    document.getElementById('btnTlPrev')?.addEventListener('click', () => { stopTimeline(); gotoEvent(SIM.currentEventIndex - 1); });
+    document.getElementById('btnTlNext')?.addEventListener('click', () => { stopTimeline(); gotoEvent(SIM.currentEventIndex + 1); });
+    document.getElementById('btnTlLast')?.addEventListener('click', () => { stopTimeline(); gotoEvent(SIM.timeline.length - 1); });
+    document.getElementById('btnTlPlay')?.addEventListener('click', () => {
+        if (SIM.isPlaying) stopTimeline(); else playTimeline();
+    });
+
+    // History clear
+    document.getElementById('btnHistoryClear')?.addEventListener('click', () => {
+        SIM.history = [];
+        renderHistory();
+        toast('History cleared', 'info');
+    });
+
+    // Topology reset
+    document.getElementById('topoResetBtn')?.addEventListener('click', () => {
+        resetTopology();
+        toast('Topology reset', 'info');
+    });
+
+    // Populate SMTP command reference
+    const smtpRef = document.getElementById('smtpCmdRef');
+    if (smtpRef) {
+        const cmds = ['EHLO','STARTTLS','AUTH LOGIN','MAIL FROM','RCPT TO','DATA'];
+        smtpRef.innerHTML = cmds.map(c => `
+            <div class="cmd-mini" data-cmd="${c}">
+                <span class="cmd-mini-name">${c}</span>
+                <span class="cmd-mini-desc">${(PROTOCOL_MEANINGS[c] || {}).meaning || ''}</span>
+            </div>
+        `).join('');
+        smtpRef.querySelectorAll('.cmd-mini').forEach(el => {
+            el.addEventListener('click', () => {
+                el.classList.toggle('active');
+                const cmd = el.dataset.cmd;
+                const meaning = PROTOCOL_MEANINGS[cmd] || {};
+                document.getElementById('xrayCompact').innerHTML = `
+                    <div class="xray-header">
+                        <span class="xray-badge">SMTP</span>
+                        <span class="xray-command">${cmd}</span>
+                    </div>
+                    <div class="xray-grid">
+                        <div class="xray-item"><span class="xray-label">Purpose</span><span class="xray-value">${meaning.meaning || '—'}</span></div>
+                        <div class="xray-item"><span class="xray-label">Port</span><span class="xray-value">${meaning.port || 587}</span></div>
+                        <div class="xray-item"><span class="xray-label">Transport</span><span class="xray-value">${meaning.trans || 'TCP'}</span></div>
+                        <div class="xray-item"><span class="xray-label">Layer</span><span class="xray-value">${meaning.app || 'SMTP'}</span></div>
+                    </div>
+                `;
+            });
+        });
+    }
+
+    // Initial toast
+    setTimeout(() => toast('MailFlow X laboratory ready', 'success'), 400);
+});
+
+/* Expose replayHistory globally */
+window.replayHistory = replayHistory;
+window.runExperiment = runExperiment;
+
+</script>
+</body>
+</html>
